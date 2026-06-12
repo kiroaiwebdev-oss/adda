@@ -64,6 +64,9 @@ $css = $template['template_css'] ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Preview: <?php echo htmlspecialchars($template['template_name']); ?></title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     

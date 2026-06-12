@@ -255,6 +255,45 @@ $hasCertificateRequest = $certReqCheck->fetch(PDO::FETCH_ASSOC);
 function decodeText($text) {
     return html_entity_decode($text ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
+
+/**
+ * Render content-block HTML safely so encoded code samples (e.g. <pre><code>&lt;!DOCTYPE html&gt;...)
+ * render as visible code instead of being eaten by the browser.
+ */
+function renderContentHtml($html) {
+    if ($html === null || $html === '') return '';
+
+    // 1) Re-encode raw HTML found inside <pre><code>...</code></pre>
+    $html = preg_replace_callback(
+        '#<pre>\s*<code>([\s\S]*?)</code>\s*</pre>#i',
+        function ($m) {
+            $inner = $m[1];
+            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
+                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+            return '<pre><code>' . $inner . '</code></pre>';
+        },
+        $html
+    );
+
+    // 2) Wrap any LOOSE <code>...</code> into a <pre> wrapper.
+    $html = preg_replace_callback(
+        '#(?<!<pre>)(?<!<pre>\s)<code>([\s\S]*?)</code>#i',
+        function ($m) {
+            $inner = $m[1];
+            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
+                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+            if (strpos($inner, "\n") !== false || strpos($inner, '&lt;') !== false || strpos($inner, '<') !== false || strpos($inner, '&amp;') !== false) {
+                return '<pre><code>' . $inner . '</code></pre>';
+            }
+            return '<code>' . $inner . '</code>';
+        },
+        $html
+    );
+
+    return $html;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -296,42 +335,146 @@ function decodeText($text) {
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
         }
-        .prose { 
-            max-width: none; 
+        .prose {
+            max-width: none;
             color: #374151;
+            font-size: 16px;
+            line-height: 1.75;
         }
-        .prose h1, .prose h2, .prose h3 { 
-            margin-top: 1.5em; 
+        .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+            margin-top: 1.5em;
             margin-bottom: 0.75em;
             color: #111827;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            line-height: 1.3;
         }
-        .prose p { 
-            margin-bottom: 1em; 
-            line-height: 1.7; 
+        .prose h1 { font-size: 2em; }
+        .prose h2 { font-size: 1.6em; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.3em; }
+        .prose h3 { font-size: 1.3em; }
+        .prose h4 { font-size: 1.1em; }
+        .prose p {
+            margin-bottom: 1em;
+            line-height: 1.75;
         }
-        .prose ul, .prose ol { 
-            margin-left: 1.5em; 
-            margin-bottom: 1em; 
+        .prose a {
+            color: #16a34a;
+            text-decoration: underline;
+            font-weight: 500;
         }
-        .prose li { 
-            margin-bottom: 0.5em; 
+        .prose a:hover { color: #15803d; }
+        .prose strong { color: #111827; font-weight: 700; }
+        .prose em { font-style: italic; }
+        .prose ul, .prose ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+            padding-left: 0.5em;
+        }
+        .prose ul { list-style-type: disc; }
+        .prose ol { list-style-type: decimal; }
+        .prose li {
+            margin-bottom: 0.5em;
+            line-height: 1.7;
+        }
+        .prose code {
+            background: #f3f4f6;
+            color: #db2777;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .prose pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.25em 0;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #334155;
+        }
+        .prose pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            font-size: inherit;
+            font-weight: 400;
+            white-space: pre;
+            word-break: normal;
+        }
+        .prose > code, .content-block > code {
+            display: block;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.25em 0;
+            white-space: pre;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid #334155;
+        }
+        .prose blockquote {
+            border-left: 4px solid #16a34a;
+            padding: 8px 16px;
+            margin: 1em 0;
+            color: #4b5563;
+            background: #f9fafb;
+            font-style: italic;
+            border-radius: 0 8px 8px 0;
         }
         .prose img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
-            margin: 10px 0;
+            margin: 1em 0;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .prose video {
+        .prose video, .prose iframe {
             max-width: 100%;
             border-radius: 12px;
-            margin: 20px 0;
+            margin: 1em 0;
         }
-        .prose iframe {
-            max-width: 100%;
-            border-radius: 12px;
-            margin: 20px 0;
-            min-height: 400px;
+        .prose iframe { min-height: 400px; }
+        .prose table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+            font-size: 0.95em;
+        }
+        .prose table th, .prose table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .prose table th {
+            background: #f3f4f6;
+            font-weight: 700;
+        }
+        .prose hr {
+            border: 0;
+            border-top: 1px solid #e5e7eb;
+            margin: 2em 0;
+        }
+        @media (max-width: 640px) {
+            .prose { font-size: 15px; }
+            .prose h1 { font-size: 1.6em; }
+            .prose h2 { font-size: 1.35em; }
+            .prose h3 { font-size: 1.15em; }
+            .prose pre, .prose > code { font-size: 13px; padding: 14px; }
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -654,7 +797,7 @@ function decodeText($text) {
                             <?php if ($block['type'] === 'text'): ?>
                                 <div class="content-block">
                                     <div class="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                                        <?php echo html_entity_decode($block['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
+                                        <?php echo renderContentHtml($block['content']); ?>
                                     </div>
                                 </div>
                                 
