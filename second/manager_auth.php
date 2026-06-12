@@ -12,21 +12,61 @@ function requireManagerAccess(): void {
 }
 
 function getManagerPermissions(): array {
+    // Master list of all manager-panel permissions
+    $allPerms = [
+        // Content
+        'courses_view','courses_edit','courses_create','courses_delete',
+        'internships_view','internships_edit','internships_create','internships_delete',
+        // Users & data
+        'users_view','enrollments_view','reports_view',
+        // Homepage banners
+        'banners_view','banners_edit',
+        // Communications
+        'contacts_view','contacts_edit',
+        'offline_apps_view','offline_apps_edit',
+        // Certificates
+        'certificates_view','certificates_edit',
+        // Coupons
+        'coupons_view','coupons_create','coupons_edit','coupons_delete',
+        // Referrals
+        'referrals_view',
+    ];
+
     // Super admin = sab kuch allow
     if ($_SESSION['user_role'] === 'admin') {
-        return array_fill_keys([
-            'courses_view','courses_edit','courses_create','courses_delete',
-            'internships_view','internships_edit','internships_create','internships_delete',
-            'enrollments_view','users_view','reports_view',
-            'coupons_view','coupons_edit','offline_apps_view','offline_apps_edit'
-        ], 1);
+        return array_fill_keys($allPerms, 1);
     }
-    if (!isset($_SESSION['manager_permissions'])) {
-        $stmt = getDB()->prepare("SELECT * FROM manager_permissions WHERE user_id = ?");
-        $stmt->execute([$_SESSION['user_id']]);
-        $_SESSION['manager_permissions'] = $stmt->fetch() ?: [];
+
+    // Manager bhi by default sab kuch allow (listed features) —
+    // manager_permissions table se per-user overrides aate hain (deny-list).
+    if ($_SESSION['user_role'] === 'manager') {
+        if (!isset($_SESSION['manager_permissions'])) {
+            try {
+                $stmt = getDB()->prepare("SELECT * FROM manager_permissions WHERE user_id = ?");
+                $stmt->execute([$_SESSION['user_id']]);
+                $row = $stmt->fetch();
+            } catch (Exception $e) {
+                $row = false;
+            }
+
+            if ($row && is_array($row)) {
+                // DB row exists — use those values, fill unset keys with default 1
+                $merged = array_fill_keys($allPerms, 1);
+                foreach ($row as $k => $v) {
+                    if (in_array($k, $allPerms, true)) {
+                        $merged[$k] = (int)$v;
+                    }
+                }
+                $_SESSION['manager_permissions'] = $merged;
+            } else {
+                // No row found — grant all listed defaults
+                $_SESSION['manager_permissions'] = array_fill_keys($allPerms, 1);
+            }
+        }
+        return $_SESSION['manager_permissions'];
     }
-    return $_SESSION['manager_permissions'];
+
+    return [];
 }
 
 // Hard block — 403 agar permission nahi
