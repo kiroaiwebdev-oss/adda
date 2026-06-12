@@ -220,8 +220,8 @@ if ($verificationCode) {
                 </div>
 
                 <div class="hidden lg:flex items-center space-x-3">
-                    <a href="/public/login.php" class="btn-login">Login</a>
-                    <a href="/public/signup.php" class="btn-signup">Sign Up</a>
+                    <a href="/public/login.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-login">Login</a>
+                    <a href="/public/signup.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-signup">Sign Up</a>
                 </div>
 
                 <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -240,8 +240,8 @@ if ($verificationCode) {
                     <a href="/public/verify.php" class="nav-link block hover:bg-gray-50 rounded-lg">Verify Certificate</a>
                     <a href="/public/contact.html" class="nav-link block hover:bg-gray-50 rounded-lg">Contact</a>
                     <div class="pt-4 space-y-3">
-                        <a href="/public/login.php" class="btn-login block text-center">Login</a>
-                        <a href="/public/signup.php" class="btn-signup block text-center">Sign Up</a>
+                        <a href="/public/login.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-login block text-center">Login</a>
+                        <a href="/public/signup.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-signup block text-center">Sign Up</a>
                     </div>
                 </div>
             </div>

@@ -186,7 +186,7 @@ try {
 
             if ($checkStmt->rowCount() == 0) {
                 $stmt = $db->prepare("
-                    INSERT INTO enrollments (user_id, course_id, enrollment_date, payment_status, amount_paid, payment_method, transaction_id)
+                    INSERT INTO enrollments (user_id, course_id, enrolled_at, payment_status, amount_paid, payment_method, payment_id)
                     VALUES (?, ?, NOW(), 'completed', ?, 'razorpay', ?)
                 ");
                 $stmt->execute([$userId, $courseId, $order['amount'], $razorpayPaymentId]);
@@ -209,10 +209,10 @@ try {
 
             if ($checkStmt->rowCount() == 0) {
                 $stmt = $db->prepare("
-                    INSERT INTO internship_enrollments (user_id, internship_id, enrolled_at, payment_status, amount_paid, payment_method, transaction_id)
-                    VALUES (?, ?, NOW(), 'completed', ?, 'razorpay', ?)
+                    INSERT INTO internship_enrollments (user_id, internship_id, payment_status, status, payment_id, payment_amount, final_amount, created_at)
+                    VALUES (?, ?, 'completed', 'accepted', ?, ?, ?, NOW())
                 ");
-                $stmt->execute([$userId, $internshipId, $order['amount'], $razorpayPaymentId]);
+                $stmt->execute([$userId, $internshipId, $razorpayPaymentId, $order['amount'], $order['amount']]);
                 error_log("✅ Internship enrollment created");
 
                 try {

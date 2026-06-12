@@ -217,8 +217,8 @@ function safe_output($text) {
                         <?php endif; ?>
                         <a href="/api/auth.php?action=logout" class="btn-signup">Logout</a>
                     <?php else: ?>
-                        <a href="login.php" class="btn-login">Login</a>
-                        <a href="signup.php" class="btn-signup">Sign Up</a>
+                        <a href="login.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-login">Login</a>
+                        <a href="signup.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-signup">Sign Up</a>
                     <?php endif; ?>
                 </div>
                 
@@ -248,8 +248,8 @@ function safe_output($text) {
                             <?php endif; ?>
                             <a href="/api/auth.php?action=logout" class="btn-signup block text-center">Logout</a>
                         <?php else: ?>
-                            <a href="login.php" class="btn-login block text-center">Login</a>
-                            <a href="signup.php" class="btn-signup block text-center">Sign Up</a>
+                            <a href="login.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-login block text-center">Login</a>
+                            <a href="signup.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="btn-signup block text-center">Sign Up</a>
                         <?php endif; ?>
                     </div>
                 </div>
