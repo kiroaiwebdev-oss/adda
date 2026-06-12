@@ -61,7 +61,7 @@ try {
                 SELECT 
                     icr.id,
                     icr.user_id,
-                    icr.internship_id,
+                    icr.internship_id AS req_internship_id,
                     icr.enrollment_id,
                     icr.student_name,
                     icr.email,
