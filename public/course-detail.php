@@ -194,8 +194,8 @@ function safeText($text) {
                         Logout
                     </a>
                 <?php else: ?>
-                    <a href="/public/login.php" class="text-sm sm:text-base text-gray-600 hover:text-primary-600 font-semibold">Login</a>
-                    <a href="/public/signup.php" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg font-semibold transition-colors text-sm sm:text-base">
+                    <a href="/public/login.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="text-sm sm:text-base text-gray-600 hover:text-primary-600 font-semibold">Login</a>
+                    <a href="/public/signup.php?redirect=<?php echo urlencode($_SERVER['REQUEST_URI']); ?>" class="bg-primary-600 hover:bg-primary-700 text-white px-3 py-1.5 sm:px-6 sm:py-2 rounded-lg font-semibold transition-colors text-sm sm:text-base">
                         Sign Up
                     </a>
                 <?php endif; ?>
