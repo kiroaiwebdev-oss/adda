@@ -150,7 +150,7 @@ function skillBadgeClass(string $level): string {
   --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
   --border:rgba(40,37,29,.12);--divider:#dcd9d5;
   --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;
+  --primary:#16a34a;--primary-h:#15803d;
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);
@@ -160,7 +160,7 @@ function skillBadgeClass(string $level): string {
   --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;
   --border:rgba(255,255,255,.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;
+  --primary:#4ade80;--primary-h:#22c55e;
   --success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;
   --shadow-sm:0 1px 2px rgba(0,0,0,.2);
 }
@@ -173,13 +173,13 @@ img{max-width:100%;height:auto;display:block}
 .sidebar-logo svg{width:30px;height:30px;flex-shrink:0}
 .logo-text{font-weight:700;font-size:.92rem}.logo-text span{color:var(--primary)}
 .sidebar-user{padding:.75rem 1.25rem;border-bottom:1px solid var(--divider)}
-.user-badge{font-size:.7rem;font-weight:700;background:rgba(1,105,111,.12);color:var(--primary);padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
+.user-badge{font-size:.7rem;font-weight:700;background:rgba(22,163,74,.12);color:var(--primary);padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
 .user-name{font-weight:600;font-size:.88rem}
 nav{flex:1;padding:.5rem 0;overflow-y:auto}
 .nav-section{padding:.45rem 1.25rem .2rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .nav-item{display:flex;align-items:center;gap:.65rem;padding:.5rem 1.25rem;font-size:.85rem;color:var(--muted);transition:color var(--t),background var(--t);position:relative}
 .nav-item:hover{background:var(--bg);color:var(--text)}
-.nav-item.active{background:rgba(1,105,111,.1);color:var(--primary);font-weight:600}
+.nav-item.active{background:rgba(22,163,74,.1);color:var(--primary);font-weight:600}
 .nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--primary);border-radius:0 4px 4px 0}
 .nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
 .nav-item.active svg,.nav-item:hover svg{opacity:1}
@@ -224,7 +224,7 @@ tbody tr:hover td{background:var(--bg)}
 .badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:9999px;font-size:.7rem;font-weight:700;white-space:nowrap}
 .badge-active{background:rgba(67,122,34,.12);color:var(--success)}
 .badge-inactive{background:rgba(122,121,116,.12);color:var(--muted)}
-.badge-remote,.badge-onsite,.badge-hybrid{background:rgba(1,105,111,.1);color:var(--primary)}
+.badge-remote,.badge-onsite,.badge-hybrid{background:rgba(22,163,74,.1);color:var(--primary)}
 .badge-onsite{background:rgba(218,113,1,.12);color:var(--orange)}
 .badge-hybrid{background:rgba(0,100,148,.1);color:#006494}
 .badge-beginner{background:rgba(67,122,34,.1);color:var(--success)}
@@ -234,8 +234,8 @@ tbody tr:hover td{background:var(--bg)}
 .price-main{font-weight:700}.price-strike{font-size:.72rem;color:var(--muted);text-decoration:line-through;display:block}
 .price-free{color:var(--success);font-weight:700}
 .actions{display:flex;gap:.5rem;align-items:center}
-.btn-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .8rem;background:rgba(1,105,111,.1);color:var(--primary);border:1px solid rgba(1,105,111,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
-.btn-edit:hover{background:rgba(1,105,111,.18)}
+.btn-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .8rem;background:rgba(22,163,74,.1);color:var(--primary);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
+.btn-edit:hover{background:rgba(22,163,74,.18)}
 .no-del{font-size:.7rem;color:var(--faint);font-style:italic}
 .empty-state{padding:3rem 1.5rem;text-align:center;color:var(--muted)}
 .empty-state svg{width:40px;height:40px;margin:0 auto .75rem;opacity:.35}

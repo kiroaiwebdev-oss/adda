@@ -12,7 +12,7 @@
   --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
   --border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;
   --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;--primary-hl:#cedcd8;
+  --primary:#16a34a;--primary-h:#15803d;--primary-hl:#dcfce7;
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;
   --shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);
@@ -23,7 +23,7 @@
   --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;
   --border:oklch(1 0 0/0.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;--primary-hl:#313b3b;
+  --primary:#4ade80;--primary-h:#22c55e;--primary-hl:#14532d;
   --success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}

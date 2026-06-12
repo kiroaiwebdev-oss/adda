@@ -7,13 +7,40 @@ $activeNav = 'banners';
 
 $flash = null;
 
-// Detect schema once — banners table column layout differs between installs
+// ── Setup: one-click create banners table if missing ────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup_table' && can('banners_edit')) {
+    try {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS `banners` (
+              `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+              `title` VARCHAR(255) DEFAULT NULL,
+              `subtitle` VARCHAR(500) DEFAULT NULL,
+              `image_url` VARCHAR(500) NOT NULL,
+              `link_url` VARCHAR(500) DEFAULT NULL,
+              `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+              `sort_order` INT(11) NOT NULL DEFAULT 0,
+              `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+              `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+              PRIMARY KEY (`id`),
+              KEY `idx_active_order` (`is_active`, `sort_order`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ");
+        logAction('banners_table_created', 'banners', 0, 'Setup');
+        $flash = ['ok' => 'Banners table created. Ab tum banner upload kar sakte ho.'];
+    } catch (Exception $e) {
+        $flash = ['err' => 'Setup fail: ' . $e->getMessage()];
+    }
+}
+
+// Detect schema (existence + column layout)
 $bannerColumns = [];
+$tableExists   = false;
 try {
     $colsStmt = $db->query("SHOW COLUMNS FROM banners");
     $bannerColumns = array_column($colsStmt->fetchAll(), 'Field');
+    $tableExists = !empty($bannerColumns);
 } catch (Exception $e) {
-    $flash = ['err' => 'banners table nahi mila: ' . $e->getMessage()];
+    $tableExists = false;
 }
 
 $has = function ($col) use ($bannerColumns) { return in_array($col, $bannerColumns, true); };
@@ -47,8 +74,9 @@ function _uploadBanner(array $file, string $uploadDirAbs, string $uploadDirRel):
 }
 
 // Edit permission required for any write
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && can('banners_edit')) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && can('banners_edit') && $tableExists) {
     $action = $_POST['action'] ?? '';
+    if ($action === 'setup_table') { $action = ''; } // already handled above
 
     try {
         if ($action === 'create') {
@@ -125,13 +153,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && can('banners_edit')) {
     }
 }
 
-// Fetch banners
+// Fetch banners (only if table exists)
 $banners = [];
-try {
-    $orderCol = $has('sort_order') ? 'sort_order' : ($has('display_order') ? 'display_order' : 'id');
-    $banners  = $db->query("SELECT * FROM banners ORDER BY $orderCol ASC, id DESC")->fetchAll();
-} catch (Exception $e) {
-    /* table missing already flagged */
+if ($tableExists) {
+    try {
+        $orderCol = $has('sort_order') ? 'sort_order' : ($has('display_order') ? 'display_order' : 'id');
+        $banners  = $db->query("SELECT * FROM banners ORDER BY $orderCol ASC, id DESC")->fetchAll();
+    } catch (Exception $e) { /* ignore */ }
 }
 ?>
 <!DOCTYPE html>
@@ -172,7 +200,21 @@ try {
         <?php if (!empty($flash['ok'])): ?><div class="alert alert-success">✓ <?= htmlspecialchars($flash['ok']) ?></div><?php endif; ?>
         <?php if (!empty($flash['err'])): ?><div class="alert alert-error">⚠️ <?= htmlspecialchars($flash['err']) ?></div><?php endif; ?>
 
-        <?php if (can('banners_edit')): ?>
+        <?php if (!$tableExists): ?>
+            <div class="alert alert-warn" style="display:flex;flex-direction:column;align-items:flex-start;gap:.6rem">
+                <div>⚠️ <strong>Banners table missing.</strong> Database mein <code>banners</code> table abhi exist nahi karta. Niche button click karke ek baar setup kar lo — phir tum banners upload kar sakte ho.</div>
+                <?php if (can('banners_edit')): ?>
+                    <form method="POST" style="margin:0">
+                        <input type="hidden" name="action" value="setup_table">
+                        <button type="submit" class="btn btn-primary">⚡ Create banners table now</button>
+                    </form>
+                <?php else: ?>
+                    <div style="font-size:.82rem;color:var(--muted)">Setup karne ke liye <code>banners_edit</code> permission chahiye.</div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($tableExists && can('banners_edit')): ?>
         <div class="upload-card">
             <h3 style="font-size:1rem;font-weight:700;margin-bottom:.75rem">+ Add new banner</h3>
             <form method="POST" enctype="multipart/form-data">
@@ -216,9 +258,9 @@ try {
         </div>
         <?php endif; ?>
 
-        <?php if (empty($banners)): ?>
+        <?php if ($tableExists && empty($banners)): ?>
             <div class="card"><div class="empty-state"><div class="empty-state-icon">🎨</div><div>Koi banner abhi nahi hai. Upar se upload karein.</div></div></div>
-        <?php else: ?>
+        <?php elseif ($tableExists): ?>
         <div class="banner-grid">
             <?php foreach ($banners as $b):
                 $imageCol = $has('image_url') ? 'image_url' : ($has('image') ? 'image' : null);
