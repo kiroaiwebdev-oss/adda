@@ -20,9 +20,9 @@ if (!$auth->check()) {
 }
 
 // Check if admin
-if ($auth->user()['role'] !== 'admin') {
+if (!in_array($auth->user()['role'], ['admin','manager'], true)) {
     http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Admin access required']);
+    echo json_encode(['success' => false, 'message' => 'Admin or Manager access required']);
     exit;
 }
 
