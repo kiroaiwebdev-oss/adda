@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internship Adda - Enterprise Learning Management System</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 10px;
+        }
+        
+        /* Header Animation - Fixed height issue */
+        .header-scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Premium Button Styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(34, 197, 94, 0.45);
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #22c55e;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e5e7eb;
+            display: inline-block;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        
+        /* Glass Card Effect - Simplified for mobile */
+        .glass-card {
+            background: white;
+            border: 1px solid rgba(34, 197, 94, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+        }
+        
+        /* Desktop-only hover effects */
+        @media (min-width: 1024px) {
+            .glass-card {
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+            
+            .glass-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 16px 50px rgba(34, 197, 94, 0.15);
+                border-color: rgba(34, 197, 94, 0.3);
+            }
+        }
+        
+        /* Mobile - subtle hover */
+        @media (max-width: 1023px) {
+            .glass-card:active {
+                transform: scale(0.98);
+            }
+        }
+        
+        /* Icon Box Styles */
+        .icon-box {
+            width: 72px;
+            height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .icon-box-green {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Desktop-only icon animation */
+        @media (min-width: 1024px) {
+            .glass-card:hover .icon-box {
+                transform: scale(1.15) rotate(-5deg);
+            }
+        }
+        
+        /* Step Number Circle */
+        .step-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
+            box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-line {
+            position: absolute;
+            top: 32px;
+            left: 64px;
+            right: -32px;
+            height: 2px;
+            background: linear-gradient(90deg, #22c55e 0%, #e5e7eb 100%);
+            z-index: 1;
+        }
+        
+        /* Course Card Premium Design */
+        .course-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .course-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.08), transparent);
+            transition: left 0.6s;
+            pointer-events: none;
+        }
+        
+        /* Desktop hover effects */
+        @media (min-width: 1024px) {
+            .course-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+                border-color: #22c55e;
+            }
+            
+            .course-card:hover::after {
+                left: 100%;
+            }
+        }
+        
+        /* Mobile tap effect */
+        @media (max-width: 1023px) {
+            .course-card:active {
+                transform: scale(0.98);
+            }
+        }
+        
+        .course-badge {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        /* Testimonial Card */
+        .testimonial-card {
+            background: white;
+            border-left: 4px solid #22c55e;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (min-width: 1024px) {
+            .testimonial-card:hover {
+                transform: translateX(8px);
+                box-shadow: 0 12px 48px rgba(34, 197, 94, 0.15);
+            }
+        }
+        
+        /* FAQ Accordion */
+        .faq-item {
+            border-bottom: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-question {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .faq-question:hover {
+            color: #22c55e;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0;
+        }
+        
+        .faq-answer.active {
+            max-height: 500px;
+            padding-bottom: 24px;
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s ease;
+            color: #22c55e;
+            font-weight: bold;
+            font-size: 1.5rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .faq-icon.active {
+            transform: rotate(45deg);
+        }
+        
+        /* Stats Counter - White/Light colors on green bg */
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: white;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Hero Background Pattern */
+        .hero-pattern {
+            background-color: #ffffff;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 50%);
+        }
+        
+        /* Alternating Section Backgrounds for Mobile */
+        .section-gray {
+            background: #fafafa;
+        }
+        
+        .section-light-green {
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mobile-menu.active {
+            max-height: 600px;
+        }
+        
+        /* Service Card Hover */
+        .service-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            transform: scaleX(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @media (min-width: 1024px) {
+            .service-card:hover::before {
+                transform: scaleX(1);
+            }
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .stat-number {
+                font-size: 2.5rem !important;
+            }
+            
+            .glass-card {
+                padding: 1.5rem !important;
+            }
+            
+            .icon-box {
+                width: 56px !important;
+                height: 56px !important;
+            }
+            
+            .icon-box svg {
+                width: 24px !important;
+                height: 24px !important;
+            }
+            
+            .step-circle {
+                width: 48px !important;
+                height: 48px !important;
+                font-size: 1.25rem !important;
+            }
+            
+            .step-line {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            h2 {
+                font-size: 1.75rem !important;
+                line-height: 1.3 !important;
+            }
+            
+            h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                text-align: center;
+                padding: 14px 24px !important;
+                font-size: 0.9rem !important;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            .stat-number {
+                font-size: 2rem !important;
+            }
+            
+            h1 {
+                font-size: 1.75rem !important;
+            }
+        }
+    </style>
+     <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1f2937;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 10px;
+        }
+        
+        /* Premium Header Design */
+        #header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        
+        .header-scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Premium Logo Animation */
+        .logo-icon {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .logo-icon:hover {
+            transform: rotate(-5deg) scale(1.05);
+        }
+        
+        /* Premium Nav Link Design */
+        .nav-link {
+            position: relative;
+            padding: 8px 16px;
+            color: #4b5563;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: #22c55e;
+        }
+        
+        .nav-link:hover::before {
+            width: 80%;
+        }
+        
+        /* Premium Buttons */
+        .btn-login {
+            color: #22c55e;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+        
+        .btn-login:hover {
+            background: #f0fdf4;
+            color: #16a34a;
+        }
+        
+        .btn-signup {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 12px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-signup::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(34, 197, 94, 0.4);
+        }
+        
+        .btn-signup:hover::before {
+            left: 100%;
+        }
+        
+        /* Mobile Menu */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mobile-menu.active {
+            max-height: 700px;
+        }
+        
+        /* Hero Section Premium Design */
+        .hero-gradient {
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 50%, #ffffff 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 70%;
+            height: 150%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        .hero-gradient::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -20%;
+            width: 60%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.05) 0%, transparent 70%);
+            animation: float 15s ease-in-out infinite reverse;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+        
+        /* Badge Design */
+        .hero-badge {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: #15803d;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .hero-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Premium CTA Buttons */
+        .btn-hero-primary {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 18px 40px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-hero-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-hero-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(34, 197, 94, 0.5);
+        }
+        
+        .btn-hero-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-hero-secondary {
+            background: white;
+            color: #22c55e;
+            padding: 18px 40px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 2px solid #e5e7eb;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .btn-hero-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(34, 197, 94, 0.2);
+            border-color: #22c55e;
+            background: #f0fdf4;
+        }
+        
+        /* Premium Dashboard Card */
+        .dashboard-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(34, 197, 94, 0.15);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border-radius: 24px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+        }
+        
+        @media (min-width: 1024px) {
+            .dashboard-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                box-shadow: 0 30px 80px rgba(34, 197, 94, 0.2);
+                border-color: rgba(34, 197, 94, 0.3);
+            }
+        }
+        
+        /* Progress Bar Premium */
+        .progress-bar-container {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e 0%, #16a34a 100%);
+            border-radius: 10px;
+            position: relative;
+            transition: width 1s ease;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Stats Card Premium */
+        .stat-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+            border: 1px solid rgba(34, 197, 94, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.15);
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        
+        /* Trust Indicators */
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+        
+        .trust-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Floating Animation */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .float-slow {
+            animation: floatSlow 6s ease-in-out infinite;
+        }
+        
+        /* Mobile Optimizations */
+        @media (max-width: 768px) {
+            .nav-link {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+            
+            .btn-hero-primary,
+            .btn-hero-secondary {
+                width: 100%;
+                text-align: center;
+                padding: 16px 24px;
+                font-size: 15px;
+            }
+            
+            .stat-number {
+                font-size: 1.75rem;
+            }
+            
+            h1 {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .hero-badge {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+        }
+        
+        @media (max-width: 375px) {
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+        /* ALTERNATE: More Prominent Green Border & Shadow */
+.glass-card {
+    background: white;
+    border: 3px solid rgba(34, 197, 94, 0.25);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.08), 
+        0 0 0 1px rgba(34, 197, 94, 0.1),
+        0 0 20px rgba(34, 197, 94, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 20px;
+}
+
+@media (min-width: 1024px) {
+    .glass-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 
+            0 20px 60px rgba(34, 197, 94, 0.25), 
+            0 0 40px rgba(34, 197, 94, 0.2),
+            0 0 0 2px rgba(34, 197, 94, 0.3);
+        border-color: rgba(34, 197, 94, 0.5);
+    }
+}
+
+    </style>
+</head>
+<body class="bg-gray-50">
+      <!-- Premium Navigation Header -->
+   <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                 <!-- Logo -->
+                <div class="flex items-center">
+                   <a href="https://internshipadda.com"> <img 
+                        src="../../icon.png" 
+                        alt="InternshipAdda Logo"
+                        class="w-auto max-h-12 sm:max-h-12 md:max-h-12 lg:max-h-16"
+                    ></a>
+                </div>
+                
+                <!-- Desktop Center Menu -->
+                <div class="hidden lg:flex items-center justify-center flex-1 mx-8">
+                    <div class="flex items-center space-x-2">
+                        <a href="about.html" class="nav-link">About</a>
+                        <a href="services.html" class="nav-link">Services</a>
+                        <a href="courses.html" class="nav-link">Courses</a>
+                        <a href="internships.php" class="nav-link">Internship</a>
+                        <a href="verify.html" class="nav-link">Verify Certificate</a>
+                        <a href="contact.html" class="nav-link">Contact</a>
+                    </div>
+                </div>
+                
+                <!-- Desktop Right Menu - Login & Sign Up -->
+                <div class="hidden lg:flex items-center space-x-3">
+                    <a href="login.php" class="btn-login">Login</a>
+                    <a href="signup.php" class="btn-signup">Sign Up</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="mobile-menu lg:hidden">
+                <div class="pt-4 pb-3 space-y-1">
+                    <a href="about.html" class="nav-link block hover:bg-gray-50 rounded-lg">About</a>
+                    <a href="services.html" class="nav-link block hover:bg-gray-50 rounded-lg">Services</a>
+                    <a href="courses.html" class="nav-link block hover:bg-gray-50 rounded-lg">Courses</a>
+                    <a href="internships.php" class="nav-link block hover:bg-gray-50 rounded-lg">Internship</a>
+                    <a href="verify.html" class="nav-link block hover:bg-gray-50 rounded-lg">Verify Certificate</a>
+                    <a href="contact.html" class="nav-link block hover:bg-gray-50 rounded-lg">Contact</a>
+                    <div class="pt-4 space-y-3">
+                        <a href="login.php" class="btn-login block text-center">Login</a>
+                        <a href="signup.php" class="btn-signup block text-center">Sign Up</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+
+    <!-- Premium Hero Section -->
+    <section class="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 pt-32 pb-24 overflow-hidden">
+        <!-- Animated Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Gradient Orbs -->
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+            <div class="absolute top-0 right-1/4 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+            <div class="absolute bottom-0 left-1/3 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+
+            <!-- Floating Particles -->
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(34, 197, 94, 0.15) 1px, transparent 0); background-size: 50px 50px;"></div>
+        </div>
+
+        <!-- Grid Pattern Overlay -->
+        <div class="absolute inset-0" style="background-image: linear-gradient(rgba(22, 163, 74, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 163, 74, 0.03) 1px, transparent 1px); background-size: 50px 50px;"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <!-- Badge with Glow Effect -->
+                <div class="inline-flex items-center bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 px-5 py-2.5 rounded-full text-sm font-semibold mb-8 shadow-lg border border-green-200 backdrop-blur-sm">
+                    <span class="relative flex h-3 w-3 mr-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-600"></span>
+                    </span>
+                    Empowering 50,000+ Learners Worldwide
+                </div>
+
+                <!-- Main Heading with Gradient Text -->
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+                    Transforming Education Through 
+                    <span class="relative inline-block">
+                        <span class="relative z-10 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">Innovation</span>
+                        <span class="absolute bottom-2 left-0 w-full h-4 bg-gradient-to-r from-green-200 to-emerald-200 -z-10 transform -rotate-1"></span>
+                    </span>
+                </h1>
+
+                <!-- Description -->
+                <p class="text-xl md:text-2xl text-gray-700 mb-12 leading-relaxed max-w-3xl mx-auto font-light">
+                    We're not just another online learning platform. We're a <span class="font-semibold text-green-700">movement</span> dedicated to democratizing world-class education and creating opportunities for every aspiring professional.
+                </p>
+
+                <!-- Stats Cards with Premium Design -->
+                <div class="flex flex-wrap justify-center gap-6 text-left">
+                    <div class="group bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-green-100/50 hover:border-green-300 hover:-translate-y-2 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">2019</div>
+                            <div class="text-gray-600 text-sm font-medium">Founded</div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-green-100/50 hover:border-green-300 hover:-translate-y-2 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-emerald-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">50K+</div>
+                            <div class="text-gray-600 text-sm font-medium">Active Learners</div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-green-100/50 hover:border-green-300 hover:-translate-y-2 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-teal-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">120+</div>
+                            <div class="text-gray-600 text-sm font-medium">Countries Served</div>
+                        </div>
+                    </div>
+
+                    <div class="group bg-white/80 backdrop-blur-md rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 border border-green-100/50 hover:border-green-300 hover:-translate-y-2 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        <div class="relative z-10">
+                            <div class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-2">98%</div>
+                            <div class="text-gray-600 text-sm font-medium">Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Wave -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg class="w-full h-16 text-white" preserveAspectRatio="none" viewBox="0 0 1440 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 22L60 26C120 30 240 38 360 38C480 38 600 30 720 28C840 26 960 30 1080 32C1200 34 1320 34 1380 34L1440 34V54H1380C1320 54 1200 54 1080 54C960 54 840 54 720 54C600 54 480 54 360 54C240 54 120 54 60 54H0V22Z" fill="currentColor"/>
+            </svg>
+        </div>
+    </section>
+
+    <style>
+        @keyframes blob {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+        .animate-blob {
+            animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+    </style>
+
+    <!-- Our Story Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                        Our Story
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                        Born from a Vision to Bridge the Skills Gap
+                    </h2>
+                    <div class="space-y-4 text-lg text-gray-600 leading-relaxed">
+                        <p>
+                            In 2019, our founders recognized a critical problem: millions of talented individuals lacked access to quality education and practical industry experience. Traditional education systems were failing to prepare students for the rapidly evolving job market.
+                        </p>
+                        <p>
+                            Internship Adda was born from a simple yet powerful idea—combine world-class curriculum, real-world projects, industry mentorship, and verifiable certifications into one comprehensive platform. We set out to create not just courses, but complete career transformation programs.
+                        </p>
+                        <p>
+                            Today, we've become India's fastest-growing learning platform, trusted by Fortune 500 companies and aspiring professionals alike. Our learners have secured positions at Google, Microsoft, Amazon, and leading startups worldwide.
+                        </p>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-3xl p-1">
+                        <div class="bg-white rounded-3xl p-8">
+                            <div class="space-y-6">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg mb-1">Mission-Driven Approach</h3>
+                                        <p class="text-gray-600">Democratize access to world-class education and real-world industry experience for everyone, everywhere.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg mb-1">Innovation at Core</h3>
+                                        <p class="text-gray-600">Leveraging AI, blockchain verification, and adaptive learning to deliver personalized education at scale.</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-4">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-gray-900 text-lg mb-1">Community First</h3>
+                                        <p class="text-gray-600">Building a global community of learners, mentors, and industry experts committed to lifelong learning.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Values Section -->
+    <section class="py-20 bg-gradient-to-br from-green-50 to-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    Our Core Values
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    What Drives Us Forward
+                </h2>
+                <p class="text-xl text-gray-600">
+                    These principles guide every decision we make and every program we create
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Excellence</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We deliver nothing but the highest quality content, mentorship, and learning experiences. Every course is meticulously crafted by industry experts with proven track records.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Accessibility</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Quality education should be accessible to everyone, regardless of location or background. We break down barriers through affordable pricing, flexible learning, and mobile-first design.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Integrity</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We maintain transparency in everything—from pricing to curriculum to outcomes. Our blockchain-verified certificates ensure credibility and trust in every achievement.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Innovation</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        We continuously evolve with technology and industry trends. AI-powered personalization, adaptive assessments, and real-time project feedback keep us at the cutting edge.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Impact</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Our success is measured by learner outcomes. Every program is designed with one goal: transform careers and create lasting professional impact in the real world.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100 hover:border-green-300">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">Practicality</h3>
+                    <p class="text-gray-600 leading-relaxed">
+                        Theory alone doesn't build careers. Every program includes hands-on projects, real-world case studies, and industry-standard tools to ensure job-ready skills.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+    <!-- Leadership Team Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    Leadership Team
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Meet the Minds Behind Internship Adda
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Industry veterans, education pioneers, and technology innovators united by a common mission
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100">
+                    <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                        <span class="text-3xl font-bold text-white">RK</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">Rajesh Kumar</h3>
+                    <p class="text-green-600 font-semibold text-center mb-4">Co-Founder & CEO</p>
+                    <p class="text-gray-600 text-center leading-relaxed">
+                        Former VP of Engineering at a Fortune 500 tech company. 15+ years building scalable education platforms. Passionate about bridging the skills gap through technology.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100">
+                    <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                        <span class="text-3xl font-bold text-white">PS</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">Priya Sharma</h3>
+                    <p class="text-green-600 font-semibold text-center mb-4">Co-Founder & CTO</p>
+                    <p class="text-gray-600 text-center leading-relaxed">
+                        AI researcher and full-stack architect. Led engineering teams at Microsoft and Google. Specializes in adaptive learning systems and educational AI.
+                    </p>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all border border-green-100">
+                    <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                        <span class="text-3xl font-bold text-white">AM</span>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">Ankit Mehta</h3>
+                    <p class="text-green-600 font-semibold text-center mb-4">Head of Content & Curriculum</p>
+                    <p class="text-gray-600 text-center leading-relaxed">
+                        Award-winning educator with 12+ years in curriculum design. Former professor at IIT. Expert in creating practical, industry-aligned learning experiences.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Numbers Section -->
+    <section class="py-20 bg-gradient-to-br from-green-600 to-green-700 text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    Our Impact in Numbers
+                </h2>
+                <p class="text-xl text-green-100">
+                    Real results, real transformations, real careers built
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-5xl md:text-6xl font-bold mb-2">50,000+</div>
+                    <div class="text-green-100 text-lg">Active Learners</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl md:text-6xl font-bold mb-2">150+</div>
+                    <div class="text-green-100 text-lg">Expert Courses</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl md:text-6xl font-bold mb-2">98%</div>
+                    <div class="text-green-100 text-lg">Satisfaction Rate</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-5xl md:text-6xl font-bold mb-2">500+</div>
+                    <div class="text-green-100 text-lg">Enterprise Clients</div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mt-16">
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="text-4xl font-bold mb-2">₹2.5 Cr+</div>
+                    <div class="text-green-100">Average salary increase for our learners after program completion</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="text-4xl font-bold mb-2">120+</div>
+                    <div class="text-green-100">Countries where our learners have successfully launched their careers</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+                    <div class="text-4xl font-bold mb-2">85%</div>
+                    <div class="text-green-100">Of learners secured jobs within 3 months of certification</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    The Internship Adda Advantage
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Why Learners Choose Us
+                </h2>
+                <p class="text-xl text-gray-600">
+                    We don't just teach—we transform careers through a holistic learning ecosystem
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Industry-Aligned Curriculum</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Every program is designed in collaboration with hiring managers from top companies. Learn exactly what employers are looking for—no fluff, only job-ready skills.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Blockchain-Verified Certificates</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Your achievements are secured on blockchain, ensuring tamper-proof verification. Employers can instantly validate your credentials with a unique verification ID.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Personalized Mentorship</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Get guidance from industry professionals who've walked your path. One-on-one mentorship sessions, code reviews, and career counseling included in premium programs.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Real-World Projects Portfolio</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Build 15-20 production-grade projects that demonstrate your skills. Create a portfolio that stands out to recruiters and showcases your capabilities.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">AI-Powered Learning Analytics</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Our adaptive AI tracks your progress, identifies strengths and weaknesses, and personalizes your learning path for maximum efficiency and retention.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex gap-6">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Placement Support & Career Services</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            Resume building, mock interviews, LinkedIn optimization, and direct referrals to hiring partners. We're invested in your career success beyond just education.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Awards & Recognition -->
+    <section class="py-20 bg-gradient-to-br from-green-50 to-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <div class="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                    Awards & Recognition
+                </div>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    Recognized Excellence
+                </h2>
+                <p class="text-xl text-gray-600">
+                    Our commitment to quality education has earned recognition from industry leaders
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-2xl p-6 shadow-lg text-center border border-green-100">
+                    <div class="text-4xl mb-3">🏆</div>
+                    <h3 class="font-bold text-gray-900 mb-2">EdTech Startup of the Year</h3>
+                    <p class="text-sm text-gray-600">2024 - TechCrunch Awards</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg text-center border border-green-100">
+                    <div class="text-4xl mb-3">⭐</div>
+                    <h3 class="font-bold text-gray-900 mb-2">Best Learning Platform</h3>
+                    <p class="text-sm text-gray-600">2024 - Product Hunt</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg text-center border border-green-100">
+                    <div class="text-4xl mb-3">🌟</div>
+                    <h3 class="font-bold text-gray-900 mb-2">Top 50 Innovative Companies</h3>
+                    <p class="text-sm text-gray-600">2025 - Inc. Magazine</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-lg text-center border border-green-100">
+                    <div class="text-4xl mb-3">💡</div>
+                    <h3 class="font-bold text-gray-900 mb-2">Excellence in AI Education</h3>
+                    <p class="text-sm text-gray-600">2025 - AI Summit Asia</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-br from-green-600 to-green-700 text-white relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            <h2 class="text-4xl md:text-5xl font-bold mb-6">
+                Ready to Transform Your Career?
+            </h2>
+            <p class="text-xl text-green-100 mb-8">
+                Join 50,000+ learners who have already taken the first step toward their dream careers. Start learning today with our world-class programs.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="courses.php" class="bg-white text-green-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-50 transition-all shadow-lg hover:shadow-xl">
+                    Browse All Programs
+                </a>
+                <a href="contact.html" class="bg-green-800 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-green-900 transition-all border-2 border-white/30">
+                    Talk to Our Team
+                </a>
+            </div>
+        </div>
+    </section>
+
+      <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12 md:py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-8 md:mb-12">
+                <!-- Company Info -->
+                <div>
+                    <div class="flex items-center">
+                   <a href="https://internshipadda.com"> <img 
+                        src="../../icons.jpg" 
+                        alt="InternshipAdda Logo"
+                        class="w-auto max-h-12 sm:max-h-12 md:max-h-12 lg:max-h-16"
+                    ></a>
+                </div>
+                    <p class="text-sm md:text-base text-gray-400 leading-relaxed mb-4">
+                        Empowering professionals worldwide with world-class internships and verified certifications.
+                    </p>
+                   <div class="flex space-x-4">
+    <!-- Facebook -->
+    <a href="https://www.facebook.com/share/1DJn9wodPA/" target="_blank" rel="noopener noreferrer" 
+       class="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+       aria-label="Facebook">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+    </a>
+    
+    <!-- Instagram -->
+    <a href="https://www.instagram.com/_internshipadda.com_" target="_blank" rel="noopener noreferrer"
+       class="w-10 h-10 bg-gray-800 hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-500 rounded-lg flex items-center justify-center transition-all"
+       aria-label="Instagram">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+    </a>
+    
+  
+    
+    <!-- LinkedIn -->
+    <a href="https://www.linkedin.com/company/internship-adda/" target="_blank" rel="noopener noreferrer"
+       class="w-10 h-10 bg-gray-800 hover:bg-blue-700 rounded-lg flex items-center justify-center transition-colors"
+       aria-label="LinkedIn">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+    </a>
+    
+    <!-- WhatsApp -->
+<a href="https://wa.me/917209747479" target="_blank" rel="noopener noreferrer"
+   class="w-10 h-10 bg-gray-800 hover:bg-gray-900 rounded-lg flex items-center justify-center transition-colors"
+   aria-label="WhatsApp">
+    
+    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 32 32">
+        <path d="M19.11 17.33c-.27-.14-1.58-.78-1.82-.87-.24-.09-.41-.14-.59.14-.18.27-.68.87-.83 1.05-.15.18-.3.2-.57.07-.27-.14-1.12-.41-2.13-1.3-.79-.7-1.32-1.56-1.47-1.83-.15-.27-.02-.42.11-.56.12-.12.27-.3.41-.45.14-.15.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.59-1.42-.81-1.94-.21-.51-.43-.44-.59-.45h-.5c-.18 0-.48.07-.73.34-.25.27-.96.94-.96 2.3s.99 2.67 1.13 2.85c.14.18 1.94 2.96 4.7 4.15.66.28 1.17.45 1.57.57.66.21 1.26.18 1.73.11.53-.08 1.58-.65 1.8-1.28.23-.63.23-1.17.16-1.28-.07-.11-.25-.18-.52-.32z"/>
+        <path d="M16.04 3C9.41 3 4 8.41 4 15.04c0 2.65.87 5.1 2.34 7.09L4 29l7.06-2.29a11.96 11.96 0 004.98 1.08c6.63 0 12.04-5.41 12.04-12.04C28.08 8.41 22.67 3 16.04 3zm0 21.9c-1.61 0-3.18-.43-4.55-1.24l-.33-.2-4.19 1.36 1.37-4.08-.21-.34a9.86 9.86 0 01-1.52-5.36c0-5.45 4.44-9.89 9.89-9.89 5.45 0 9.89 4.44 9.89 9.89 0 5.45-4.44 9.89-9.89 9.89z"/>
+    </svg>
+</a>
+
+    
+ 
+</div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-base md:text-lg font-bold mb-4 md:mb-6">Quick Links</h4>
+                    <ul class="space-y-2 md:space-y-3 text-sm md:text-base">
+                        <li><a href="about.html" class="text-gray-400 hover:text-primary-500 transition-colors">About Us</a></li>
+                        <li><a href="services.html" class="text-gray-400 hover:text-primary-500 transition-colors">Services</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Browse Programs</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-primary-500 transition-colors">Become Mentor</a></li>
+                        <li><a href="contact.html" class="text-gray-400 hover:text-primary-500 transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Categories -->
+                <div>
+                    <h4 class="text-base md:text-lg font-bold mb-4 md:mb-6">Categories</h4>
+                    <ul class="space-y-2 md:space-y-3 text-sm md:text-base">
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Web Development</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Data Science</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Digital Marketing</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Mobile Development</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">UI/UX Design</a></li>
+                        <li><a href="courses.html" class="text-gray-400 hover:text-primary-500 transition-colors">Cloud Computing</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div>
+                    <h4 class="text-base md:text-lg font-bold mb-4 md:mb-6">Support</h4>
+                    <ul class="space-y-2 md:space-y-3 text-sm md:text-base">
+                        <li><a href="Contact.html" class="text-gray-400 hover:text-primary-500 transition-colors">Help Center</a></li>
+                        <li><a href="toc.html" class="text-gray-400 hover:text-primary-500 transition-colors">Terms of Service</a></li>
+                        <li><a href="privacy-policy.html" class="text-gray-400 hover:text-primary-500 transition-colors">Privacy Policy</a></li>
+                        <li><a href="cookie.html" class="text-gray-400 hover:text-primary-500 transition-colors">Cookie Policy</a></li>
+                        <li><a href="refund.html" class="text-gray-400 hover:text-primary-500 transition-colors">Refund Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom Footer -->
+          <div class="border-t border-gray-800 pt-6 md:pt-8">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-gray-400 text-xs md:text-sm text-center md:text-left">
+            © 2026 Internship Adda. All rights reserved. Built with ❤️ for learners worldwide. 
+            <span class="mx-1">•</span>
+            Built by 
+            <a href="https://devsarun.io/" target="_blank" class="text-gray-300 hover:text-white underline-offset-2 hover:underline">
+                DevsArun
+            </a>
+        </p>
+    </div>
+</div>
+
+        </div>
+    </footer>
+    <script>
+       // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on links
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+            });
+        });
+        
+        // Premium Header Scroll Effect
+        const header = document.getElementById('header');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('header-scrolled');
+            } else {
+                header.classList.remove('header-scrolled');
+            }
+        });
+        
+        // Smooth Scrolling for Anchor Links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href === '#' || href === '#signup' || href === '#login' || href === '#all-courses') {
+                    return;
+                }
+                
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    const headerHeight = header.offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - headerHeight - 20;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // FAQ Toggle Function
+        function toggleFaq(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('.faq-icon');
+            const allAnswers = document.querySelectorAll('.faq-answer');
+            const allIcons = document.querySelectorAll('.faq-icon');
+            
+            // Close all other FAQs
+            allAnswers.forEach(item => {
+                if (item !== answer) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            allIcons.forEach(item => {
+                if (item !== icon) {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Toggle current FAQ
+            answer.classList.toggle('active');
+            icon.classList.toggle('active');
+        }
+        
+        // Scroll to Top Button
+        const scrollTopBtn = document.getElementById('scrollTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 500) {
+                scrollTopBtn.style.opacity = '1';
+                scrollTopBtn.style.visibility = 'visible';
+            } else {
+                scrollTopBtn.style.opacity = '0';
+                scrollTopBtn.style.visibility = 'hidden';
+            }
+        });
+        
+        scrollTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Intersection Observer for animations - Desktop Only
+        if (window.innerWidth >= 1024) {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe cards for animation
+            document.querySelectorAll('.glass-card, .course-card, .testimonial-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+            });
+        }
+        
+        // Prevent default for placeholder links
+        document.querySelectorAll('a[href="#signup"], a[href="#login"], a[href="#all-courses"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Add your navigation logic here
+                console.log('Navigate to:', link.getAttribute('href'));
+            });
+        });
+        
+        // Console message for developers
+        console.log('%c👋 Built with Internship Adda', 'color: #22c55e; font-size: 16px; font-weight: bold;');
+        console.log('%cInterested in our platform? Visit internshipadda.com', 'color: #666; font-size: 12px;');
+    </script>
+</body>
+</html>
