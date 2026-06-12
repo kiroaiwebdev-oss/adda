@@ -246,55 +246,7 @@ tbody tr:hover td{background:var(--bg)}
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <svg viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="7" fill="var(--primary)"/>
-      <path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-    <div class="logo-text">Internship<span>Adda</span></div>
-  </div>
-  <div class="sidebar-user">
-    <div class="user-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'manager') ?></div>
-    <div class="user-name"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Manager') ?></div>
-  </div>
-  <nav>
-    <div class="nav-section">Overview</div>
-    <a href="manager_dashboard.php" class="nav-item ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-
-    <div class="nav-section">Content</div>
-    <?php if(can('courses_view')): ?>
-    <a href="courses.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Courses
-    </a>
-    <?php endif; ?>
-    <?php if(can('internships_view')): ?>
-    <a href="internships.php" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      Internships
-    </a>
-    <?php endif; ?>
-
-    
-
-    <div class="nav-section">Logs</div>
-    <a href="activity_log.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Activity Log
-    </a>
-  </nav>
-  <div class="sidebar-footer">
-    <a href="?logout=1" class="btn-sm btn-danger">Logout</a>
-    <button data-theme-toggle class="btn-sm btn-ghost" aria-label="Toggle theme">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-  </div>
-</aside>
+<?php $activeNav = "internships"; include __DIR__ . "/_sidebar.php"; ?>
 
 <div class="main">
   <header class="topbar">
