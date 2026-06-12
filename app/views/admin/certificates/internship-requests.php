@@ -37,7 +37,7 @@ try {
     die("Authentication error: " . $e->getMessage());
 }
 
-$statusFilter = $_GET['status'] ?? 'pending';
+$statusFilter = $_GET['status'] ?? 'all';
 $search = $_GET['search'] ?? '';
 
 // Fetch certificate requests
