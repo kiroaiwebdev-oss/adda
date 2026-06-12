@@ -1,8 +1,8 @@
 <?php
-
-// Error debugging - REMOVE in production
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Error reporting - hide errors from users in production but log them
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
@@ -172,13 +172,28 @@ $stats['total_certificates'] = $courseCertificates + $internshipCertificates;
 // GET RECENT COURSES
 // ========================================
 $recentCourses = [];
+
+// Check what column the topic_progress table uses
+$tpColumn = 'is_complete';
+try {
+    $colCheck = $db->query("SHOW COLUMNS FROM topic_progress LIKE 'is_complete'");
+    if (!$colCheck->fetch()) {
+        $colCheck2 = $db->query("SHOW COLUMNS FROM topic_progress LIKE 'is_completed'");
+        if ($colCheck2->fetch()) {
+            $tpColumn = 'is_completed';
+        }
+    }
+} catch (Exception $e) {
+    $tpColumn = 'is_complete';
+}
+
 try {
     $stmt = $db->prepare("
         SELECT 
             e.id, e.course_id, e.enrolled_at, e.completed_at, e.progress_percent,
             c.title, c.description,
             COALESCE((SELECT COUNT(*) FROM topics t JOIN chapters ch ON t.chapter_id = ch.id WHERE ch.course_id = c.id), 0) as total_topics,
-            COALESCE((SELECT COUNT(*) FROM topic_progress tp JOIN topics t ON tp.topic_id = t.id JOIN chapters ch ON t.chapter_id = ch.id WHERE tp.user_id = e.user_id AND ch.course_id = c.id AND tp.is_completed = 1), 0) as completed_topics
+            COALESCE((SELECT COUNT(*) FROM topic_progress tp JOIN topics t ON tp.topic_id = t.id JOIN chapters ch ON t.chapter_id = ch.id WHERE tp.user_id = e.user_id AND ch.course_id = c.id AND tp.{$tpColumn} = 1), 0) as completed_topics
         FROM enrollments e
         JOIN courses c ON e.course_id = c.id
         WHERE e.user_id = ?
@@ -301,6 +316,9 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>My Dashboard - Internship Adda</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">

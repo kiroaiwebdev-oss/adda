@@ -51,7 +51,11 @@ function safe_output($text) {
 $columnsStmt = $db->query("SHOW COLUMNS FROM topic_progress");
 $columns = $columnsStmt->fetchAll(PDO::FETCH_COLUMN);
 $hasIsCompleted = in_array('is_completed', $columns);
+$hasIsComplete = in_array('is_complete', $columns);
 $hasCompletedAt = in_array('completed_at', $columns);
+
+// Determine which column to use for completion check (prefer is_complete since writers use it)
+$completionColumn = $hasIsComplete ? 'is_complete' : ($hasIsCompleted ? 'is_completed' : null);
 
 // Get stats for menu
 $stats = [
@@ -110,13 +114,13 @@ try {
         
         // Count completed topics - DYNAMIC QUERY BASED ON TABLE STRUCTURE
         try {
-            if ($hasIsCompleted) {
+            if ($completionColumn) {
                 $completedStmt = $db->prepare("
                     SELECT COUNT(*) 
                     FROM topic_progress tp 
                     JOIN topics t ON tp.topic_id = t.id 
                     JOIN chapters ch ON t.chapter_id = ch.id 
-                    WHERE tp.user_id = ? AND ch.course_id = ? AND tp.is_completed = 1
+                    WHERE tp.user_id = ? AND ch.course_id = ? AND tp.{$completionColumn} = 1
                 ");
             } else {
                 $completedStmt = $db->prepare("
@@ -175,6 +179,9 @@ $totalCertificates = $stats['total_certificates'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>My Courses - Internship Adda</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -531,7 +538,7 @@ $totalCertificates = $stats['total_certificates'];
         <div class="border-t border-gray-200 my-4"></div>
 
         <!-- Logout -->
-        <a href="/app/api/auth.php?action=logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors font-semibold">
+        <a href="/api/auth.php?action=logout" class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors font-semibold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
