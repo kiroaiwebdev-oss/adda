@@ -52,6 +52,20 @@ try {
         throw new Exception('Topic ID required');
     }
     
+    // Detect actual column name in topic_progress
+    $tpColumn = 'is_complete';
+    try {
+        $colCheck = $db->query("SHOW COLUMNS FROM topic_progress LIKE 'is_complete'");
+        if (!$colCheck->fetch()) {
+            $colCheck2 = $db->query("SHOW COLUMNS FROM topic_progress LIKE 'is_completed'");
+            if ($colCheck2->fetch()) {
+                $tpColumn = 'is_completed';
+            }
+        }
+    } catch (Exception $e) {
+        $tpColumn = 'is_complete';
+    }
+    
     // Check if progress exists
     $checkStmt = $db->prepare("
         SELECT * FROM topic_progress 
@@ -61,17 +75,15 @@ try {
     $existing = $checkStmt->fetch(PDO::FETCH_ASSOC);
     
     if ($existing) {
-        // Update existing - FIXED: is_complete (not is_completed)
         $updateStmt = $db->prepare("
             UPDATE topic_progress 
-            SET is_complete = 1, completed_at = NOW()
+            SET {$tpColumn} = 1, completed_at = NOW()
             WHERE topic_id = ? AND user_id = ?
         ");
         $updateStmt->execute([$topicId, $userId]);
     } else {
-        // Insert new - FIXED: is_complete (not is_completed)
         $insertStmt = $db->prepare("
-            INSERT INTO topic_progress (topic_id, user_id, is_complete, completed_at)
+            INSERT INTO topic_progress (topic_id, user_id, {$tpColumn}, completed_at)
             VALUES (?, ?, 1, NOW())
         ");
         $insertStmt->execute([$topicId, $userId]);

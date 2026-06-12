@@ -103,7 +103,7 @@ try {
             $progressStmt->execute([$topicRow['id'], $userId]);
             $progress = $progressStmt->fetch(PDO::FETCH_ASSOC);
             
-            $chapters[$chapterIndex]['topics'][$topicIndex]['is_completed'] = $progress ? $progress['is_complete'] : 0;
+            $chapters[$chapterIndex]['topics'][$topicIndex]['is_completed'] = $progress ? ($progress['is_complete'] ?? $progress['is_completed'] ?? 0) : 0;
             $chapters[$chapterIndex]['topics'][$topicIndex]['completed_at'] = $progress ? $progress['completed_at'] : null;
             
             // Check if topic has quiz
@@ -196,6 +196,39 @@ if ($currentTopic && !empty($currentTopic['content_blocks'])) {
     $contentBlocks = $currentTopic['content_blocks'];
 }
 
+// Build a flat ordered list of topics for prev/next navigation and overall progress
+$allTopicsFlat = [];
+$totalTopics = 0;
+$completedTopics = 0;
+foreach ($chapters as $chapter) {
+    foreach ($chapter['topics'] as $topic) {
+        $allTopicsFlat[] = [
+            'id'           => (int)$topic['id'],
+            'title'        => $topic['title'],
+            'chapter_id'   => $chapter['id'],
+            'is_completed' => !empty($topic['is_completed']),
+        ];
+        $totalTopics++;
+        if (!empty($topic['is_completed'])) {
+            $completedTopics++;
+        }
+    }
+}
+$overallPct = $totalTopics > 0 ? (int) round(($completedTopics / $totalTopics) * 100) : 0;
+
+// Find prev / next topics relative to current
+$prevTopic = null;
+$nextTopic = null;
+if ($currentTopic) {
+    foreach ($allTopicsFlat as $idx => $t) {
+        if ($t['id'] == (int)$currentTopic['id']) {
+            if ($idx > 0) $prevTopic = $allTopicsFlat[$idx - 1];
+            if ($idx < count($allTopicsFlat) - 1) $nextTopic = $allTopicsFlat[$idx + 1];
+            break;
+        }
+    }
+}
+
 function decodeText($text) {
     return html_entity_decode($text ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 }
@@ -206,6 +239,9 @@ function decodeText($text) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title><?php echo decodeText($course['title']); ?> - Course Player</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -545,6 +581,26 @@ function decodeText($text) {
     <!-- Main Content -->
     <div class="flex-1 overflow-y-auto bg-white mobile-content">
         <?php if ($currentTopic): ?>
+            <!-- Sticky Progress Header -->
+            <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-gray-200 px-4 sm:px-6 md:px-8 py-3">
+                <div class="max-w-4xl mx-auto flex items-center gap-3 sm:gap-4">
+                    <div class="hidden sm:flex w-10 h-10 bg-primary-100 rounded-full items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <p class="text-xs sm:text-sm font-semibold text-gray-700"><?php echo $completedTopics; ?> of <?php echo $totalTopics; ?> topics</p>
+                            <p class="text-xs sm:text-sm font-bold text-primary-700"><?php echo $overallPct; ?>%</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r from-primary-500 to-primary-700 h-2 rounded-full transition-all duration-500" style="width: <?php echo $overallPct; ?>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
                 <div class="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200">
                     <div class="flex items-center gap-2 text-xs sm:text-sm text-primary-600 font-medium mb-2 sm:mb-3">
@@ -629,6 +685,37 @@ function decodeText($text) {
                                 <p class="text-green-700 text-sm">You completed this topic</p>
                             </div>
                         </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Previous / Next Navigation -->
+                <div class="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+                    <?php if ($prevTopic): ?>
+                        <a href="?id=<?php echo $courseId; ?>&topic=<?php echo $prevTopic['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 border border-gray-200 rounded-xl transition-all">
+                            <svg class="w-5 h-5 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <div class="min-w-0 text-left">
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Previous</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($prevTopic['title'])); ?></p>
+                            </div>
+                        </a>
+                    <?php else: ?>
+                        <div></div>
+                    <?php endif; ?>
+
+                    <?php if ($nextTopic): ?>
+                        <a href="?id=<?php echo $courseId; ?>&topic=<?php echo $nextTopic['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-primary-50 hover:bg-primary-100 active:bg-primary-200 border border-primary-200 rounded-xl transition-all justify-end text-right">
+                            <div class="min-w-0">
+                                <p class="text-xs text-primary-700 uppercase tracking-wider font-semibold">Next</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($nextTopic['title'])); ?></p>
+                            </div>
+                            <svg class="w-5 h-5 text-primary-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>

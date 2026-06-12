@@ -1,7 +1,8 @@
 <?php
-// Error debugging - REMOVE in production
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Error reporting - hide errors from users in production but log them
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
+ini_set('log_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
@@ -94,6 +95,9 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>My Certificates - Internship Adda</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
