@@ -257,40 +257,90 @@ function decodeText($text) {
 }
 
 /**
- * Render content-block HTML safely so encoded code samples (e.g. <pre><code>&lt;!DOCTYPE html&gt;...)
- * render as visible code instead of being eaten by the browser.
+ * Render content-block HTML safely so code samples render as visible code
+ * instead of being eaten by the browser. Handles raw OR encoded admin input
+ * with or without <pre><code> wrappers.
  */
 function renderContentHtml($html) {
     if ($html === null || $html === '') return '';
 
-    // 1) Re-encode raw HTML found inside <pre><code>...</code></pre>
+    // STEP 1: Protect existing <pre>...</pre> blocks (with any attrs)
+    $protected = [];
     $html = preg_replace_callback(
-        '#<pre>\s*<code>([\s\S]*?)</code>\s*</pre>#i',
-        function ($m) {
-            $inner = $m[1];
-            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
-                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        '#(<pre\b[^>]*>)([\s\S]*?)(</pre>)#i',
+        function ($m) use (&$protected) {
+            $openTag = $m[1]; $inner = $m[2]; $closeTag = $m[3];
+            if (stripos($inner, '<code') !== false) {
+                $inner = preg_replace_callback(
+                    '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
+                    function ($m2) {
+                        $c = $m2[2];
+                        if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $c)) {
+                            $c = htmlspecialchars($c, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        }
+                        return $m2[1] . $c . $m2[3];
+                    },
+                    $inner
+                );
+            } else {
+                if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $inner)) {
+                    $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
             }
-            return '<pre><code>' . $inner . '</code></pre>';
+            $key = '___PRE_BLOCK_' . count($protected) . '___';
+            $protected[$key] = $openTag . $inner . $closeTag;
+            return $key;
         },
         $html
     );
 
-    // 2) Wrap any LOOSE <code>...</code> into a <pre> wrapper.
+    // STEP 2: Loose <code> blocks
     $html = preg_replace_callback(
-        '#(?<!<pre>)(?<!<pre>\s)<code>([\s\S]*?)</code>#i',
+        '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
         function ($m) {
-            $inner = $m[1];
-            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
-                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $c = $m[2];
+            if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $c)) {
+                $c = htmlspecialchars($c, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             }
-            if (strpos($inner, "\n") !== false || strpos($inner, '&lt;') !== false || strpos($inner, '<') !== false || strpos($inner, '&amp;') !== false) {
-                return '<pre><code>' . $inner . '</code></pre>';
+            if (strpos($c, "\n") !== false || strpos($c, '&lt;') !== false || strpos($c, '<') !== false) {
+                return '<pre><code>' . $c . '</code></pre>';
             }
-            return '<code>' . $inner . '</code>';
+            return $m[1] . $c . $m[3];
         },
         $html
     );
+
+    // STEP 3a: Wrap full <!DOCTYPE>...</html> bare blocks in <pre><code>
+    $html = preg_replace_callback(
+        '#(<!DOCTYPE\b[^>]*>[\s\S]*?</html\s*>)#i',
+        function ($m) {
+            return '<pre><code>' . htmlspecialchars($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8') . '</code></pre>';
+        },
+        $html
+    );
+
+    // STEP 3b: Encode any remaining orphan doc-level tags
+    $rawTagPatterns = [
+        '#<!DOCTYPE\b[^>]*>#i',
+        '#</?html\b[^>]*>#i',
+        '#</?head\b[^>]*>#i',
+        '#</?body\b[^>]*>#i',
+        '#<title\b[^>]*>[\s\S]*?</title>#i',
+        '#<script\b[^>]*>[\s\S]*?</script>#i',
+        '#<style\b[^>]*>[\s\S]*?</style>#i',
+        '#<meta\b[^>]*/?>#i',
+        '#<link\b[^>]*/?>#i',
+    ];
+    foreach ($rawTagPatterns as $pattern) {
+        $html = preg_replace_callback($pattern, function ($m) {
+            return htmlspecialchars($m[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }, $html);
+    }
+
+    // STEP 4: Restore protected <pre> blocks
+    foreach ($protected as $key => $value) {
+        $html = str_replace($key, $value, $html);
+    }
 
     return $html;
 }

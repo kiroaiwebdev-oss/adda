@@ -234,50 +234,104 @@ function decodeText($text) {
 }
 
 /**
- * Render content-block HTML safely so encoded code samples (e.g. <pre><code>&lt;!DOCTYPE html&gt;...)
+ * Render content-block HTML safely so code samples (HTML/CSS/JS/PHP etc.)
  * render as visible code instead of being eaten by the browser.
  *
- * Rule: do NOT decode entities globally; trust the rich-text editor's encoding.
- * Also auto-wrap loose multi-line <code>...</code> blocks (TinyMCE sometimes emits these
- * without a parent <pre>) so they render as proper dark code blocks.
- * If we detect RAW HTML inside <code> (admin pasted unencoded code), re-encode it so
- * the browser doesn't eat <html>/<head>/<body>/<title> tags.
+ * Handles 4 cases:
+ *  a) Properly encoded <pre><code>&lt;!DOCTYPE&gt;...</code></pre>     → unchanged
+ *  b) Raw HTML inside <pre><code><!DOCTYPE>...</code></pre>            → re-encoded
+ *  c) Raw <!DOCTYPE>...</html> directly in content (no wrapper)        → wrap in <pre><code> + encode
+ *  d) Loose multi-line <code>...</code> (TinyMCE emits sometimes)      → wrap in <pre>
  */
 function renderContentHtml($html) {
     if ($html === null || $html === '') return '';
 
-    // 1) Re-encode raw HTML found inside <pre><code>...</code></pre>
+    // STEP 1: Protect existing <pre>...</pre> blocks (handles any attrs).
+    // Re-encode raw doc-level tags inside their <code> child (or inside <pre> directly).
+    $protected = [];
     $html = preg_replace_callback(
-        '#<pre>\s*<code>([\s\S]*?)</code>\s*</pre>#i',
-        function ($m) {
-            $inner = $m[1];
-            // If it contains literal <!DOCTYPE, <html>, <head>, <body>, <script>, <style>, <link>, <meta> tags
-            // (i.e. admin pasted raw, not entity-encoded) we must encode them so browser shows as text.
-            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
-                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        '#(<pre\b[^>]*>)([\s\S]*?)(</pre>)#i',
+        function ($m) use (&$protected) {
+            $openTag  = $m[1];
+            $inner    = $m[2];
+            $closeTag = $m[3];
+
+            if (stripos($inner, '<code') !== false) {
+                $inner = preg_replace_callback(
+                    '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
+                    function ($m2) {
+                        $codeContent = $m2[2];
+                        if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $codeContent)) {
+                            $codeContent = htmlspecialchars($codeContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        }
+                        return $m2[1] . $codeContent . $m2[3];
+                    },
+                    $inner
+                );
+            } else {
+                if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $inner)) {
+                    $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
             }
-            return '<pre><code>' . $inner . '</code></pre>';
+
+            $key = '___PRE_BLOCK_' . count($protected) . '___';
+            $protected[$key] = $openTag . $inner . $closeTag;
+            return $key;
         },
         $html
     );
 
-    // 2) Wrap any LOOSE <code>...</code> (NOT already inside <pre>) into a <pre> wrapper.
+    // STEP 2: Loose <code> (not inside <pre>) — wrap multi-line in <pre>, encode raw tags
     $html = preg_replace_callback(
-        '#(?<!<pre>)(?<!<pre>\s)<code>([\s\S]*?)</code>#i',
+        '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
         function ($m) {
-            $inner = $m[1];
-            // Re-encode raw document-level tags
-            if (preg_match('#<(!doctype|html|head|body|title|script|style|link|meta)\b#i', $inner)) {
-                $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $codeContent = $m[2];
+
+            if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $codeContent)) {
+                $codeContent = htmlspecialchars($codeContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
             }
-            // multi-line OR has &lt; OR has < => block-level code rendering
-            if (strpos($inner, "\n") !== false || strpos($inner, '&lt;') !== false || strpos($inner, '<') !== false || strpos($inner, '&amp;') !== false) {
-                return '<pre><code>' . $inner . '</code></pre>';
+
+            if (strpos($codeContent, "\n") !== false || strpos($codeContent, '&lt;') !== false || strpos($codeContent, '<') !== false) {
+                return '<pre><code>' . $codeContent . '</code></pre>';
             }
-            return '<code>' . $inner . '</code>';
+            return $m[1] . $codeContent . $m[3];
         },
         $html
     );
+
+    // STEP 3a: Auto-detect full <!DOCTYPE ...>...</html> blocks pasted raw into content
+    // (admin paste-bug). Wrap them in a styled <pre><code> with ALL contents encoded.
+    $html = preg_replace_callback(
+        '#(<!DOCTYPE\b[^>]*>[\s\S]*?</html\s*>)#i',
+        function ($m) {
+            $encoded = htmlspecialchars($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            return '<pre><code>' . $encoded . '</code></pre>';
+        },
+        $html
+    );
+
+    // STEP 3b: Encode any remaining bare doc-level tags (orphan <html>, <body>, etc.)
+    $rawTagPatterns = [
+        '#<!DOCTYPE\b[^>]*>#i',
+        '#</?html\b[^>]*>#i',
+        '#</?head\b[^>]*>#i',
+        '#</?body\b[^>]*>#i',
+        '#<title\b[^>]*>[\s\S]*?</title>#i',
+        '#<script\b[^>]*>[\s\S]*?</script>#i',
+        '#<style\b[^>]*>[\s\S]*?</style>#i',
+        '#<meta\b[^>]*/?>#i',
+        '#<link\b[^>]*/?>#i',
+    ];
+    foreach ($rawTagPatterns as $pattern) {
+        $html = preg_replace_callback($pattern, function ($m) {
+            return htmlspecialchars($m[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }, $html);
+    }
+
+    // STEP 4: Restore protected <pre> blocks
+    foreach ($protected as $key => $value) {
+        $html = str_replace($key, $value, $html);
+    }
 
     return $html;
 }
