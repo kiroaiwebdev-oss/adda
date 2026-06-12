@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Manager Login — InternshipAdda</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
 <style>
-:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:#d4d1ca;--text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-h:#0c4e54;--error:#a12c7b;--radius:0.75rem;--shadow:0 4px 24px oklch(0.2 0.01 80/0.10)}
-[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:#393836;--text:#cdccca;--muted:#797876;--primary:#4f98a3;--primary-h:#227f8b;--error:#d163a7}
+:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:#d4d1ca;--text:#28251d;--muted:#7a7974;--primary:#16a34a;--primary-h:#15803d;--error:#a12c7b;--radius:0.75rem;--shadow:0 4px 24px oklch(0.2 0.01 80/0.10)}
+[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:#393836;--text:#cdccca;--muted:#797876;--primary:#4ade80;--primary-h:#22c55e;--error:#d163a7}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;align-items:center;justify-content:center}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;width:100%;max-width:420px;box-shadow:var(--shadow)}

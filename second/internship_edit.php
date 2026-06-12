@@ -75,7 +75,7 @@ function hasCol($col, $cols) { return in_array($col, $cols); }
 :root,[data-theme="light"]{
   --bg:#f7f6f2;--surface:#fff;--border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;
   --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;
+  --primary:#16a34a;--primary-h:#15803d;
   --success:#437a22;--error:#a12c7b;--orange:#da7101;
   --r-md:.5rem;--r-lg:.75rem;
   --shadow-md:0 4px 16px oklch(0.2 0.01 80/0.1);
@@ -84,7 +84,7 @@ function hasCol($col, $cols) { return in_array($col, $cols); }
 [data-theme="dark"]{
   --bg:#171614;--surface:#1c1b19;--border:oklch(1 0 0/0.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;
+  --primary:#4ade80;--primary-h:#22c55e;
   --success:#6daa45;--error:#d163a7;--orange:#fdab43;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}

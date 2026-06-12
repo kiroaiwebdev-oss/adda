@@ -4,123 +4,241 @@ requireManagerAccess();
 checkPermission('offline_apps_view');
 
 $db = getDB();
+$activeNav = 'offline_apps';
 
-// Status update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && can('offline_apps_edit')) {
+$flash = null;
+
+// ── Schema-detection: which table does this DB use? ────────────────
+//  newer (correct) schema: offline_internship_applications + is_contacted etc.
+//  older legacy schema:    offlineinternshipapplications  + iscontacted etc.
+$tbl = null;
+$colMap = []; // maps logical name → actual column
+try {
+    $hasNew = false;
+    $hasOld = false;
+    $tablesStmt = $db->query("SHOW TABLES");
+    foreach ($tablesStmt->fetchAll(PDO::FETCH_COLUMN) as $t) {
+        if ($t === 'offline_internship_applications') $hasNew = true;
+        if ($t === 'offlineinternshipapplications')   $hasOld = true;
+    }
+    if ($hasNew) {
+        $tbl = 'offline_internship_applications';
+        $colMap = [
+            'is_contacted' => 'is_contacted',
+            'is_enrolled'  => 'is_enrolled',
+            'contacted_at' => 'contacted_at',
+            'enrolled_at'  => 'enrolled_at',
+            'created_at'   => 'created_at',
+        ];
+    } elseif ($hasOld) {
+        $tbl = 'offlineinternshipapplications';
+        $colMap = [
+            'is_contacted' => 'iscontacted',
+            'is_enrolled'  => 'isenrolled',
+            'contacted_at' => 'contactedat',
+            'enrolled_at'  => 'enrolledat',
+            'created_at'   => 'createdat',
+        ];
+    }
+} catch (Exception $e) {
+    $flash = ['err' => 'Schema detect fail: ' . $e->getMessage()];
+}
+
+// ── POST handler ────────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && can('offline_apps_edit') && $tbl) {
     $appId     = (int)($_POST['app_id'] ?? 0);
     $newStatus = $_POST['new_status'] ?? '';
     $notes     = trim($_POST['notes'] ?? '');
-    if ($appId && in_array($newStatus, ['pending','contacted','enrolled','rejected'])) {
-        $extra = '';
-        $params = [$newStatus];
-        if ($newStatus === 'contacted') { $extra = ", iscontacted=1, contactedat=NOW()"; }
-        if ($newStatus === 'enrolled')  { $extra = ", isenrolled=1, enrolledat=NOW()"; }
-        if ($notes) { $params[] = $notes; $extra .= ", notes=?"; }
-        $params[] = $appId;
-        $db->prepare("UPDATE offlineinternshipapplications SET status=?$extra WHERE id=?")
-           ->execute($params);
-        logAction("offline_app_status_updated", 'offline_app', $appId, "New status: $newStatus");
+
+    if ($appId && in_array($newStatus, ['pending','contacted','enrolled','rejected'], true)) {
+        try {
+            $db->beginTransaction();
+            $db->prepare("UPDATE `$tbl` SET status = ? WHERE id = ?")
+               ->execute([$newStatus, $appId]);
+            if ($newStatus === 'contacted') {
+                $col1 = $colMap['is_contacted']; $col2 = $colMap['contacted_at'];
+                $db->prepare("UPDATE `$tbl` SET `$col1` = 1, `$col2` = NOW() WHERE id = ?")->execute([$appId]);
+            }
+            if ($newStatus === 'enrolled') {
+                $a = $colMap['is_contacted']; $b = $colMap['contacted_at'];
+                $c = $colMap['is_enrolled'];  $d = $colMap['enrolled_at'];
+                $db->prepare("UPDATE `$tbl` SET `$a` = 1, `$c` = 1, `$b` = COALESCE(`$b`, NOW()), `$d` = NOW() WHERE id = ?")->execute([$appId]);
+            }
+            if ($notes !== '') {
+                $db->prepare("UPDATE `$tbl` SET notes = ? WHERE id = ?")->execute([$notes, $appId]);
+            }
+            $db->commit();
+            logAction('offline_app_status_updated', 'offline_app', $appId, "Status: $newStatus");
+            header('Location: offline_apps.php?updated=1'); exit;
+        } catch (Exception $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            $flash = ['err' => $e->getMessage()];
+        }
     }
-    header('Location: offline_apps.php?updated=1'); exit;
 }
 
-$filter = $_GET['status'] ?? '';
-$sql = "SELECT * FROM offlineinternshipapplications WHERE 1=1";
-$params = [];
-if ($filter) { $sql .= " AND status = ?"; $params[] = $filter; }
-$sql .= " ORDER BY created_at DESC LIMIT 80";
-$stmt = $db->prepare($sql); $stmt->execute($params);
-$apps = $stmt->fetchAll();
+// ── Fetch ───────────────────────────────────────────────────────────
+$apps   = [];
+$status = $_GET['status'] ?? '';
+$search = trim($_GET['q'] ?? '');
+
+if ($tbl) {
+    $sql = "SELECT * FROM `$tbl` WHERE 1=1";
+    $params = [];
+    if ($status) { $sql .= " AND status = ?"; $params[] = $status; }
+    if ($search) {
+        $sql .= " AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)";
+        array_push($params, "%$search%", "%$search%", "%$search%");
+    }
+    $created = $colMap['created_at'];
+    $sql .= " ORDER BY `$created` DESC LIMIT 100";
+    try {
+        $stmt = $db->prepare($sql); $stmt->execute($params);
+        $apps = $stmt->fetchAll();
+    } catch (Exception $e) {
+        $flash = ['err' => $e->getMessage()];
+    }
+}
+
+// ── Stats ───────────────────────────────────────────────────────────
+$stats = ['total'=>0,'pending'=>0,'contacted'=>0,'enrolled'=>0];
+if ($tbl) {
+    try {
+        $stats['total']     = (int)$db->query("SELECT COUNT(*) FROM `$tbl`")->fetchColumn();
+        $stats['pending']   = (int)$db->query("SELECT COUNT(*) FROM `$tbl` WHERE status='pending'")->fetchColumn();
+        $stats['contacted'] = (int)$db->query("SELECT COUNT(*) FROM `$tbl` WHERE status='contacted'")->fetchColumn();
+        $stats['enrolled']  = (int)$db->query("SELECT COUNT(*) FROM `$tbl` WHERE status='enrolled'")->fetchColumn();
+    } catch (Exception $e) { /* ignore */ }
+}
+
+if (isset($_GET['updated'])) $flash = ['ok' => 'Application updated'];
 ?>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Offline Applications — Manager Panel</title>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<?php include __DIR__ . '/_styles.php'; ?>
 <style>
-:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;--text:#28251d;--muted:#7a7974;--faint:#bab9b4;--primary:#01696f;--primary-h:#0c4e54;--success:#437a22;--error:#a12c7b;--orange:#da7101;--r-lg:.75rem;--r-md:.5rem;--shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);--t:180ms}
-[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:oklch(1 0 0/0.08);--divider:#262523;--text:#cdccca;--muted:#797876;--faint:#5a5957;--primary:#4f98a3;--success:#6daa45;--error:#d163a7;--orange:#fdab43}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);padding:1.5rem;min-height:100dvh}
-h1{font-size:1.25rem;font-weight:700;margin-bottom:1.25rem}
-.back{font-size:.83rem;color:var(--primary);display:inline-flex;gap:.3rem;margin-bottom:.75rem}
-.filter-bar{display:flex;gap:.75rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
-select,input{padding:.5rem .9rem;border:1.5px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text);font:inherit;font-size:.85rem}
-.btn{padding:.5rem 1rem;border-radius:var(--r-md);font:inherit;font-size:.83rem;font-weight:600;cursor:pointer;border:none}
-.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-h)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm);margin-bottom:1rem}
-.app-header{padding:.9rem 1.25rem;border-bottom:1px solid var(--divider);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem}
+.app-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);margin-bottom:1rem;overflow:hidden}
+.app-head{padding:.85rem 1.25rem;border-bottom:1px solid var(--divider);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;align-items:center}
 .app-name{font-weight:700;font-size:.95rem}
 .app-meta{font-size:.78rem;color:var(--muted)}
-.app-body{padding:1rem 1.25rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem}
-.info-item{font-size:.8rem}.info-label{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.15rem}
-.badge{display:inline-flex;padding:.2rem .6rem;border-radius:9999px;font-size:.72rem;font-weight:600}
-.badge-pending{background:oklch(from var(--orange) l c h/0.15);color:var(--orange)}
-.badge-contacted{background:oklch(from var(--primary) l c h/0.12);color:var(--primary)}
-.badge-enrolled{background:oklch(from var(--success) l c h/0.12);color:var(--success)}
-.badge-rejected{background:oklch(from var(--error) l c h/0.12);color:var(--error)}
-.update-form{padding:.9rem 1.25rem;border-top:1px solid var(--divider);display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;background:var(--bg)}
-.alert{padding:.65rem 1rem;border-radius:var(--r-md);font-size:.85rem;margin-bottom:1.2rem}
-.alert-success{background:oklch(from var(--success) l c h/0.1);border:1px solid oklch(from var(--success) l c h/0.3);color:var(--success)}
+.app-grid{padding:1rem 1.25rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.85rem;font-size:.85rem}
+.app-grid-item .lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.15rem}
+.app-actions{padding:.85rem 1.25rem;border-top:1px solid var(--divider);background:var(--surface-2);display:flex;gap:.65rem;flex-wrap:wrap;align-items:center}
 </style>
 </head>
 <body>
-<a href="manager_dashboard.php" class="back">← Dashboard</a>
-<h1>Offline Internship Applications</h1>
 
-<?php if(isset($_GET['updated'])): ?>
-<div class="alert alert-success">✓ Application status updated successfully!</div>
-<?php endif; ?>
+<?php include __DIR__ . '/_sidebar.php'; ?>
 
-<form method="GET" class="filter-bar">
-  <select name="status" onchange="this.form.submit()">
-    <option value="">All Applications</option>
-    <option value="pending"   <?= $filter==='pending'?'selected':'' ?>>Pending</option>
-    <option value="contacted" <?= $filter==='contacted'?'selected':'' ?>>Contacted</option>
-    <option value="enrolled"  <?= $filter==='enrolled'?'selected':'' ?>>Enrolled</option>
-    <option value="rejected"  <?= $filter==='rejected'?'selected':'' ?>>Rejected</option>
-  </select>
-  <span style="font-size:.82rem;color:var(--muted)"><?= count($apps) ?> applications</span>
-</form>
+<div class="main">
+    <header class="topbar">
+        <button class="mobile-menu-btn" id="menuBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+        <div class="breadcrumb">Manager Panel / <span>Offline Applications</span></div>
+    </header>
 
-<?php if(empty($apps)): ?>
-  <p style="color:var(--muted);font-size:.9rem;padding:2rem;text-align:center">No applications found.</p>
-<?php endif; ?>
+    <main class="content">
+        <div class="page-header">
+            <div>
+                <h1>Offline Internship Applications</h1>
+                <p>Walk-in / form-based internship applications jo public website se aati hain</p>
+            </div>
+        </div>
 
-<?php foreach($apps as $app): ?>
-<div class="card">
-  <div class="app-header">
-    <div>
-      <div class="app-name"><?= htmlspecialchars($app['name']) ?></div>
-      <div class="app-meta"><?= htmlspecialchars($app['email']) ?> &nbsp;•&nbsp; <?= htmlspecialchars($app['phone']) ?></div>
-    </div>
-    <span class="badge badge-<?= $app['status'] ?>"><?= ucfirst($app['status']) ?></span>
-  </div>
-  <div class="app-body">
-    <div class="info-item"><div class="info-label">Internship Type</div><?= htmlspecialchars($app['internshiptype']) ?></div>
-    <div class="info-item"><div class="info-label">Duration</div><?= htmlspecialchars($app['duration']??'—') ?></div>
-    <div class="info-item"><div class="info-label">College</div><?= htmlspecialchars($app['college']??'—') ?></div>
-    <div class="info-item"><div class="info-label">Year</div><?= htmlspecialchars($app['year']??'—') ?></div>
-    <div class="info-item"><div class="info-label">Applied</div><?= date('d M Y', strtotime($app['created_at'])) ?></div>
-    <?php if($app['notes']): ?>
-    <div class="info-item" style="grid-column:1/-1"><div class="info-label">Notes</div><?= htmlspecialchars($app['notes']) ?></div>
-    <?php endif; ?>
-  </div>
-  <?php if(can('offline_apps_edit')): ?>
-  <form method="POST" class="update-form">
-    <input type="hidden" name="app_id" value="<?= $app['id'] ?>">
-    <select name="new_status">
-      <option value="pending"   <?= $app['status']==='pending'?'selected':'' ?>>Pending</option>
-      <option value="contacted" <?= $app['status']==='contacted'?'selected':'' ?>>Contacted</option>
-      <option value="enrolled"  <?= $app['status']==='enrolled'?'selected':'' ?>>Enrolled</option>
-      <option value="rejected"  <?= $app['status']==='rejected'?'selected':'' ?>>Rejected</option>
-    </select>
-    <input type="text" name="notes" placeholder="Notes add karo..." style="flex:1;min-width:160px">
-    <button type="submit" class="btn btn-primary">Update Status</button>
-  </form>
-  <?php endif; ?>
+        <?php if (!empty($flash['ok'])): ?><div class="alert alert-success">✓ <?= htmlspecialchars($flash['ok']) ?></div><?php endif; ?>
+        <?php if (!empty($flash['err'])): ?><div class="alert alert-error">⚠️ <?= htmlspecialchars($flash['err']) ?></div><?php endif; ?>
+
+        <?php if (!$tbl): ?>
+            <div class="alert alert-warn">
+                ⚠️ Offline applications table is missing. Aap public form se ek application bhejein, table auto-create ho jayega.
+            </div>
+        <?php else: ?>
+
+        <div class="kpi-grid">
+            <div class="kpi-card accent"><div class="kpi-label">Total</div><div class="kpi-value"><?= $stats['total'] ?></div></div>
+            <div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:var(--orange)"><?= $stats['pending'] ?></div></div>
+            <div class="kpi-card"><div class="kpi-label">Contacted</div><div class="kpi-value" style="color:var(--primary)"><?= $stats['contacted'] ?></div></div>
+            <div class="kpi-card"><div class="kpi-label">Enrolled</div><div class="kpi-value" style="color:var(--success)"><?= $stats['enrolled'] ?></div></div>
+        </div>
+
+        <form method="GET" class="filter-bar">
+            <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search name, email, phone…" style="min-width:220px;flex:1">
+            <select name="status" onchange="this.form.submit()">
+                <option value="">All status</option>
+                <option value="pending"   <?= $status==='pending'?'selected':'' ?>>Pending</option>
+                <option value="contacted" <?= $status==='contacted'?'selected':'' ?>>Contacted</option>
+                <option value="enrolled"  <?= $status==='enrolled'?'selected':'' ?>>Enrolled</option>
+                <option value="rejected"  <?= $status==='rejected'?'selected':'' ?>>Rejected</option>
+            </select>
+            <button class="btn btn-primary" type="submit">Filter</button>
+            <?php if ($search || $status): ?><a class="btn btn-outline" href="offline_apps.php">Clear</a><?php endif; ?>
+        </form>
+
+        <?php if (empty($apps)): ?>
+            <div class="card"><div class="empty-state"><div class="empty-state-icon">📋</div><div>Koi offline application abhi nahi.</div></div></div>
+        <?php endif; ?>
+
+        <?php foreach ($apps as $app): ?>
+            <div class="app-card">
+                <div class="app-head">
+                    <div>
+                        <div class="app-name"><?= htmlspecialchars($app['name']) ?></div>
+                        <div class="app-meta">
+                            <?= htmlspecialchars($app['email']) ?>
+                            <?= !empty($app['phone']) ? ' • ' . htmlspecialchars($app['phone']) : '' ?>
+                            • <?= !empty($app[$colMap['created_at']]) ? date('d M Y, H:i', strtotime($app[$colMap['created_at']])) : '—' ?>
+                        </div>
+                    </div>
+                    <span class="badge status-<?= htmlspecialchars($app['status']) ?>"><?= ucfirst($app['status']) ?></span>
+                </div>
+
+                <div class="app-grid">
+                    <?php if (!empty($app['college'])): ?>
+                    <div class="app-grid-item"><div class="lbl">College</div><?= htmlspecialchars($app['college']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['course'])): ?>
+                    <div class="app-grid-item"><div class="lbl">Course</div><?= htmlspecialchars($app['course']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['year'])): ?>
+                    <div class="app-grid-item"><div class="lbl">Year</div><?= htmlspecialchars($app['year']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['internship_type'])): ?>
+                    <div class="app-grid-item"><div class="lbl">Type</div><?= htmlspecialchars($app['internship_type']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['duration'])): ?>
+                    <div class="app-grid-item"><div class="lbl">Duration</div><?= htmlspecialchars($app['duration']) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['message'])): ?>
+                    <div class="app-grid-item" style="grid-column:1/-1"><div class="lbl">Message</div><?= nl2br(htmlspecialchars($app['message'])) ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($app['notes'])): ?>
+                    <div class="app-grid-item" style="grid-column:1/-1"><div class="lbl">Admin Notes</div><?= nl2br(htmlspecialchars($app['notes'])) ?></div>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (can('offline_apps_edit')): ?>
+                <form method="POST" class="app-actions">
+                    <input type="hidden" name="app_id" value="<?= (int)$app['id'] ?>">
+                    <select name="new_status" required>
+                        <option value="">— Update status —</option>
+                        <option value="pending">Pending</option>
+                        <option value="contacted">Contacted</option>
+                        <option value="enrolled">Enrolled</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <input type="text" name="notes" placeholder="Optional notes" style="flex:1;min-width:160px">
+                    <button class="btn btn-primary" type="submit">Update</button>
+                </form>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+
+        <?php endif; /* $tbl exists */ ?>
+    </main>
 </div>
-<?php endforeach; ?>
+
+<?php include __DIR__ . '/_layout_js.php'; ?>
 </body>
 </html>
