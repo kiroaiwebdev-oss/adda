@@ -105,6 +105,17 @@ try {
             $modules[$moduleIndex]['lessons'][$lessonIndex]['is_completed'] = $progress ? $progress['is_completed'] : 0;
             $modules[$moduleIndex]['lessons'][$lessonIndex]['completed_at'] = $progress ? $progress['completed_at'] : null;
             
+            // Check if lesson has any quiz questions (used for 7-day weekly quiz)
+            try {
+                $quizCountStmt = $db->prepare("SELECT COUNT(*) FROM internship_quiz_questions WHERE lesson_id = ?");
+                $quizCountStmt->execute([$lessonRow['id']]);
+                $quizCount = (int) $quizCountStmt->fetchColumn();
+            } catch (Exception $e) {
+                $quizCount = 0;
+            }
+            $modules[$moduleIndex]['lessons'][$lessonIndex]['has_quiz']        = $quizCount > 0;
+            $modules[$moduleIndex]['lessons'][$lessonIndex]['quiz_question_count'] = $quizCount;
+            
             $stmt = $db->prepare("SELECT * FROM internship_content_blocks WHERE lesson_id = ? ORDER BY sort_order ASC, id ASC");
             $stmt->execute([$lessonRow['id']]);
             $modules[$moduleIndex]['lessons'][$lessonIndex]['content_blocks'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -165,6 +176,55 @@ if ($currentLesson && !empty($currentLesson['content_blocks'])) {
     $contentBlocks = $currentLesson['content_blocks'];
 }
 
+// Build a flat ordered list of lessons for prev/next navigation and overall progress
+$allLessonsFlat = [];
+$totalLessons = 0;
+$completedLessons = 0;
+foreach ($modules as $module) {
+    foreach ($module['lessons'] as $lesson) {
+        $allLessonsFlat[] = [
+            'id'           => (int)$lesson['id'],
+            'title'        => $lesson['title'],
+            'module_id'    => $module['id'],
+            'sort_order'   => (int)($lesson['sort_order'] ?? 0),
+            'is_completed' => !empty($lesson['is_completed']),
+        ];
+        $totalLessons++;
+        if (!empty($lesson['is_completed'])) {
+            $completedLessons++;
+        }
+    }
+}
+$overallPct = $totalLessons > 0 ? (int) round(($completedLessons / $totalLessons) * 100) : 0;
+
+// Find prev / next lessons relative to current
+$prevLesson = null;
+$nextLesson = null;
+if ($currentLesson) {
+    foreach ($allLessonsFlat as $idx => $l) {
+        if ($l['id'] == (int)$currentLesson['id']) {
+            if ($idx > 0) $prevLesson = $allLessonsFlat[$idx - 1];
+            if ($idx < count($allLessonsFlat) - 1) $nextLesson = $allLessonsFlat[$idx + 1];
+            break;
+        }
+    }
+}
+
+// Determine if this is a "weekly quiz" lesson (Day 7 / last day of module)
+$isWeeklyQuizLesson = false;
+$lessonHasQuiz = false;
+if ($currentLesson && $currentModule) {
+    $currentSort = (int)($currentLesson['sort_order'] ?? 0);
+    $maxSort = 0;
+    foreach ($currentModule['lessons'] as $l) {
+        if ((int)$l['sort_order'] > $maxSort) {
+            $maxSort = (int)$l['sort_order'];
+        }
+    }
+    $isWeeklyQuizLesson = ($currentSort >= 7) || ($currentSort > 0 && $currentSort === $maxSort);
+    $lessonHasQuiz = !empty($currentLesson['has_quiz']);
+}
+
 // Check if internship is 100% complete
 $totalLessonsCheck = $db->prepare("
     SELECT COUNT(DISTINCT il.id) as total
@@ -202,6 +262,9 @@ function decodeText($text) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title><?php echo decodeText($internship['title']); ?> - Internship Player</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -449,6 +512,9 @@ function decodeText($text) {
                                                     <?php if (!empty($lesson['duration_minutes'])): ?>
                                                         <div class="text-xs text-gray-500 mt-1">⏱️ <?php echo $lesson['duration_minutes']; ?> min</div>
                                                     <?php endif; ?>
+                                                    <?php if (!empty($lesson['has_quiz']) && (int)($lesson['sort_order'] ?? 0) >= 7): ?>
+                                                        <span class="inline-block mt-1 text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">📝 Quiz</span>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         </a>
@@ -519,6 +585,9 @@ function decodeText($text) {
                                                     <?php if (!empty($lesson['duration_minutes'])): ?>
                                                         <div class="text-xs text-gray-500 mt-1">⏱️ <?php echo $lesson['duration_minutes']; ?> minutes</div>
                                                     <?php endif; ?>
+                                                    <?php if (!empty($lesson['has_quiz']) && (int)($lesson['sort_order'] ?? 0) >= 7): ?>
+                                                        <span class="inline-block mt-1 text-xs font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">📝 Weekly Quiz</span>
+                                                    <?php endif; ?>
                                                 </div>
                                             </div>
                                         </a>
@@ -535,6 +604,26 @@ function decodeText($text) {
     <!-- Main Content Area -->
     <div class="flex-1 overflow-y-auto bg-white mobile-content">
         <?php if ($currentLesson): ?>
+            <!-- Sticky Progress Header -->
+            <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-gray-200 px-4 sm:px-6 md:px-8 py-3">
+                <div class="max-w-4xl mx-auto flex items-center gap-3 sm:gap-4">
+                    <div class="hidden sm:flex w-10 h-10 bg-primary-100 rounded-full items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <p class="text-xs sm:text-sm font-semibold text-gray-700"><?php echo $completedLessons; ?> of <?php echo $totalLessons; ?> lessons</p>
+                            <p class="text-xs sm:text-sm font-bold text-primary-700"><?php echo $overallPct; ?>%</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r from-primary-500 to-primary-700 h-2 rounded-full transition-all duration-500" style="width: <?php echo $overallPct; ?>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
                 <div class="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200">
                     <div class="flex items-center gap-2 text-xs sm:text-sm text-primary-600 font-medium mb-2 sm:mb-3">
@@ -594,6 +683,44 @@ function decodeText($text) {
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
+
+                <?php if ($lessonHasQuiz && $isWeeklyQuizLesson): ?>
+                    <!-- Weekly Quiz CTA (Day 7) -->
+                    <div class="mt-8 sm:mt-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5 sm:p-7 shadow-sm">
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div class="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900">📝 Weekly Quiz Available</h3>
+                                    <span class="text-xs font-bold text-white bg-blue-600 px-2 py-0.5 rounded-full">Day 7</span>
+                                </div>
+                                <p class="text-sm sm:text-base text-gray-700 mb-3">
+                                    You've reached the end of this week. Take this short quiz to lock in what you learned and unlock the next week's lessons.
+                                </p>
+                                <div class="flex items-center gap-3 text-xs sm:text-sm text-gray-600">
+                                    <span class="inline-flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        <?php echo (int)$currentLesson['quiz_question_count']; ?> questions
+                                    </span>
+                                    <span>•</span>
+                                    <span>~5 min</span>
+                                </div>
+                            </div>
+                            <a href="/app/views/learner/internship-quiz.php?lesson=<?php echo (int)$currentLesson['id']; ?>&internship=<?php echo (int)$internshipId; ?>"
+                               class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all">
+                                <span>Take Quiz</span>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 
                 <div class="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t-2 border-gray-200">
                     <?php if (empty($currentLesson['is_completed'])): ?>
@@ -621,6 +748,37 @@ function decodeText($text) {
                                 <p class="text-green-700 text-sm">You completed this lesson</p>
                             </div>
                         </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Previous / Next Navigation -->
+                <div class="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+                    <?php if ($prevLesson): ?>
+                        <a href="?id=<?php echo $internshipId; ?>&lesson=<?php echo $prevLesson['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 border border-gray-200 rounded-xl transition-all">
+                            <svg class="w-5 h-5 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <div class="min-w-0 text-left">
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Previous</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($prevLesson['title'])); ?></p>
+                            </div>
+                        </a>
+                    <?php else: ?>
+                        <div></div>
+                    <?php endif; ?>
+
+                    <?php if ($nextLesson): ?>
+                        <a href="?id=<?php echo $internshipId; ?>&lesson=<?php echo $nextLesson['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-primary-50 hover:bg-primary-100 active:bg-primary-200 border border-primary-200 rounded-xl transition-all justify-end text-right">
+                            <div class="min-w-0">
+                                <p class="text-xs text-primary-700 uppercase tracking-wider font-semibold">Next</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($nextLesson['title'])); ?></p>
+                            </div>
+                            <svg class="w-5 h-5 text-primary-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>
