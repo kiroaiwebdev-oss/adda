@@ -88,10 +88,10 @@ try {
 .msg-body{padding:1rem 1.25rem;font-size:.88rem;line-height:1.6;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
 .msg-actions{padding:.85rem 1.25rem;border-top:1px solid var(--divider);display:flex;gap:.7rem;flex-wrap:wrap;background:var(--surface-2);align-items:center}
 .msg-notes{padding:.85rem 1.25rem;border-top:1px solid var(--divider);background:var(--bg);font-size:.83rem}
-.priority-low{background:oklch(from var(--muted) l c h/0.15);color:var(--muted)}
-.priority-medium{background:oklch(from var(--primary) l c h/0.12);color:var(--primary)}
-.priority-high{background:oklch(from var(--orange) l c h/0.15);color:var(--orange)}
-.priority-urgent{background:oklch(from var(--error) l c h/0.12);color:var(--error)}
+.priority-low{background:rgba(107,114,128,0.15);color:var(--muted)}
+.priority-medium{background:rgba(22,163,74,0.12);color:var(--primary)}
+.priority-high{background:rgba(218,113,1,0.15);color:var(--orange)}
+.priority-urgent{background:rgba(161,44,123,0.12);color:var(--error)}
 </style>
 </head>
 <body>

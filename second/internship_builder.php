@@ -89,9 +89,9 @@ unset($modulesTemp, $lessonsTemp);
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root,[data-theme="light"]{
-  --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
-  --border:rgba(40,37,29,.12);--divider:#dcd9d5;
-  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
+  --bg:#f9fafb;--surface:#fff;--surface-2:#f3f4f6;
+  --border:rgba(40,37,29,.12);--divider:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--faint:#9ca3af;
   --primary:#16a34a;--primary-h:#15803d;--primary-light:rgba(22,163,74,.08);
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --blue:#006494;--purple:#7a39bb;
@@ -968,9 +968,9 @@ async function deleteQuestion(id){
 // ─── THEME TOGGLE ─────────────────────────────────────────────────────
 (function(){
     var t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
-    var d=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    var d=localStorage.getItem('mgr-theme')||'light';
     r.setAttribute('data-theme',d);
-    if(t) t.addEventListener('click',function(){ d=d==='dark'?'light':'dark'; r.setAttribute('data-theme',d); });
+    if(t) t.addEventListener('click',function(){ d=d==='dark'?'light':'dark'; r.setAttribute('data-theme',d); localStorage.setItem('mgr-theme',d); });
 })();
 
 // Close modal on overlay click
