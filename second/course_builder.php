@@ -13,6 +13,7 @@ $course = $course->fetch();
 if (!$course) { header('Location: courses.php'); exit; }
 
 $msg = '';
+$activeNav = 'courses';
 
 // ── AJAX / POST HANDLER ───────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -240,11 +241,49 @@ button{cursor:pointer;font:inherit;color:inherit}
   .sidebar-chapters{display:none}
   .main-area{padding:1rem}
 }
+
+/* ===== SHARED NAV SIDEBAR (consistent with rest of manager panel) ===== */
+.sidebar{width:240px;min-height:100dvh;background:var(--surface);border-right:1px solid var(--divider);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:300}
+.sidebar-logo{padding:1.1rem 1.25rem;border-bottom:1px solid var(--divider);display:flex;align-items:center;gap:.75rem}
+.sidebar-logo svg{width:30px;height:30px;flex-shrink:0}
+.logo-text{font-weight:700;font-size:.92rem}.logo-text span{color:var(--primary)}
+.sidebar-user{padding:.75rem 1.25rem;border-bottom:1px solid var(--divider)}
+.user-badge{font-size:.7rem;font-weight:700;background:oklch(from var(--primary) l c h/0.1);color:var(--primary);padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
+.user-name{font-weight:600;font-size:.88rem}
+.user-email-sm{font-size:.72rem;color:var(--muted)}
+.sidebar nav{flex:1;padding:.5rem 0;overflow-y:auto}
+.nav-section{padding:.45rem 1.25rem .2rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.5rem 1.25rem;font-size:.85rem;color:var(--muted);transition:color var(--t),background var(--t);position:relative}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:oklch(from var(--primary) l c h/0.1);color:var(--primary);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--primary);border-radius:0 4px 4px 0}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.nav-item.active svg,.nav-item:hover svg{opacity:1}
+.sidebar-footer{padding:.9rem 1.25rem;border-top:1px solid var(--divider);display:flex;gap:.5rem}
+.btn-sm{padding:.4rem .85rem;font-size:.78rem;border-radius:var(--r-md);font-weight:500;cursor:pointer;transition:background var(--t),color var(--t);display:inline-flex;align-items:center;gap:.3rem;text-decoration:none}
+.btn-danger{background:rgba(161,44,123,.1);color:var(--error);border:none}.btn-danger:hover{background:rgba(161,44,123,.18)}
+
+/* shift builder content next to the nav sidebar */
+.cb-main{margin-left:240px}
+.mobile-menu-btn{display:none;align-items:center;justify-content:center;width:34px;height:34px;border-radius:var(--r-md);color:var(--muted);background:none;border:none}
+.mobile-menu-btn:hover{background:var(--bg)}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform .3s ease}
+  .sidebar.open{transform:translateX(0)}
+  .cb-main{margin-left:0}
+  .mobile-menu-btn{display:inline-flex}
+}
 </style>
 </head>
 <body>
 
+<?php include __DIR__ . '/_sidebar.php'; ?>
+
+<div class="cb-main">
 <div class="topbar">
+  <button class="mobile-menu-btn" id="menuBtn" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
   <a href="courses.php" class="back-btn">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     Courses
@@ -402,6 +441,7 @@ button{cursor:pointer;font:inherit;color:inherit}
     <?php endforeach; ?>
   </main>
 </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -480,12 +520,8 @@ async function saveBlock(id, btn) {
   } else showToast(r.msg || 'Error', true);
 }
 
-// Dark mode toggle
-(function(){
-  const r = document.documentElement;
-  let d = 'light';
-  r.setAttribute('data-theme', d);
-})();
+// Dark mode toggle handled by shared _layout_js.php
 </script>
+<?php include __DIR__ . '/_layout_js.php'; ?>
 </body>
 </html>
