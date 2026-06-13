@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Course details update karo ya content builder me jaake chapters/lessons manage karo.</p>
             </div>
             <div style="display:flex;gap:.6rem;flex-wrap:wrap">
-                <a href="course_builder.php?course_id=<?= (int)$course['id'] ?>" class="btn btn-primary">
+                <a href="course_content_editor.php?course_id=<?= (int)$course['id'] ?>" class="btn btn-primary">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
                     Content Builder
                 </a>

@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newId = (int)$db->lastInsertId();
             logAction('course_created', 'course', $newId, "Title: $title, Status: $status");
             // Naya course banne ke baad seedhe content builder pe le jao
-            header("Location: course_builder.php?course_id=$newId");
+            header("Location: course_content_editor.php?course_id=$newId");
             exit;
         } catch (Exception $e) {
             $error = 'Course create nahi ho paaya: ' . $e->getMessage();

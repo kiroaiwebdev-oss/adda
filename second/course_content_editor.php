@@ -263,6 +263,75 @@ h1,h2,h3,h4{font-family:'Poppins',sans-serif}
 </head>
 <body>
 
+<!-- ===== Shared-style nav sidebar (self-contained for this Tailwind page) ===== -->
+<style>
+.mp-sidebar{width:240px;height:100vh;background:#fff;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:9000;font-family:'Inter','Satoshi',sans-serif}
+.mp-sidebar .mp-logo{padding:1.1rem 1.25rem;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:.6rem}
+.mp-sidebar .mp-logo svg{width:30px;height:30px}
+.mp-logo-text{font-weight:700;font-size:.92rem;color:#111827}.mp-logo-text span{color:#16a34a}
+.mp-user{padding:.75rem 1.25rem;border-bottom:1px solid #e5e7eb}
+.mp-badge{font-size:.68rem;font-weight:700;background:rgba(22,163,74,.1);color:#16a34a;padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
+.mp-uname{font-weight:600;font-size:.88rem;color:#111827}
+.mp-usub{font-size:.72rem;color:#6b7280}
+.mp-nav{flex:1;padding:.5rem 0;overflow-y:auto}
+.mp-sec{padding:.45rem 1.25rem .2rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9ca3af}
+.mp-link{display:flex;align-items:center;gap:.65rem;padding:.5rem 1.25rem;font-size:.85rem;color:#6b7280;text-decoration:none;position:relative;transition:background .15s,color .15s}
+.mp-link:hover{background:#f9fafb;color:#111827}
+.mp-link.active{background:rgba(22,163,74,.1);color:#16a34a;font-weight:600}
+.mp-link.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:#16a34a;border-radius:0 4px 4px 0}
+.mp-link svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.mp-link.active svg{opacity:1}
+.mp-foot{padding:.9rem 1.25rem;border-top:1px solid #e5e7eb;display:flex;gap:.5rem}
+.mp-foot a{padding:.4rem .85rem;font-size:.78rem;border-radius:.5rem;font-weight:600;background:rgba(161,44,123,.1);color:#a12c7b;text-decoration:none;display:inline-flex;align-items:center;gap:.3rem}
+.mp-foot a:hover{background:rgba(161,44,123,.18)}
+body{padding-left:240px}
+.mp-menu-btn{display:none}
+@media(max-width:768px){
+  body{padding-left:0}
+  .mp-sidebar{transform:translateX(-100%);transition:transform .3s ease}
+  .mp-sidebar.open{transform:translateX(0)}
+  .mp-menu-btn{display:inline-flex;align-items:center;justify-content:center;position:fixed;top:.6rem;left:.6rem;z-index:9500;width:38px;height:38px;border-radius:.5rem;background:#16a34a;color:#fff;border:none;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+}
+</style>
+
+<aside class="mp-sidebar" id="sidebar">
+  <div class="mp-logo">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="7" fill="#16a34a"/><path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <div class="mp-logo-text">Internship<span>Adda</span></div>
+  </div>
+  <div class="mp-user">
+    <div class="mp-badge"><?= htmlspecialchars(ucfirst($user_role)) ?></div>
+    <div class="mp-uname"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Manager') ?></div>
+    <div class="mp-usub">Platform Manager</div>
+  </div>
+  <nav class="mp-nav">
+    <div class="mp-sec">Overview</div>
+    <a href="manager_dashboard.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+    <a href="reports.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 5-5"/></svg>Reports</a>
+    <div class="mp-sec">Content</div>
+    <a href="courses.php" class="mp-link active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Courses</a>
+    <a href="internships.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>Internships</a>
+    <a href="banners.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Homepage Banners</a>
+    <div class="mp-sec">Audience</div>
+    <a href="users.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Users</a>
+    <a href="referrals.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3l3 3-3 3"/><path d="M21 6h-5"/></svg>Referrals</a>
+    <div class="mp-sec">Inbox</div>
+    <a href="contacts.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Contact Messages</a>
+    <a href="offline_apps.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Offline Applications</a>
+    <a href="certificates.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M9 13.5V21l3-2 3 2v-7.5"/></svg>Certificate Requests</a>
+    <div class="mp-sec">Marketing</div>
+    <a href="coupons.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9.5V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3.5a2.5 2.5 0 0 0 0 5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-3.5a2.5 2.5 0 0 0 0-5z"/><line x1="9" y1="15" x2="15" y2="9"/></svg>Coupons</a>
+    <div class="mp-sec">Logs</div>
+    <a href="activity_log.php" class="mp-link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Activity Log</a>
+  </nav>
+  <div class="mp-foot">
+    <a href="manager_dashboard.php?logout=1"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Logout</a>
+  </div>
+</aside>
+<button id="menuBtn" class="mp-menu-btn" aria-label="Open menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+
 <?php if ($is_manager): ?>
 <div class="manager-notice">
     <i class="fas fa-shield-alt"></i>
@@ -822,5 +891,6 @@ document.querySelectorAll('.modal').forEach(modal => {
     });
 });
 </script>
+<?php include __DIR__ . '/_layout_js.php'; ?>
 </body>
 </html>
