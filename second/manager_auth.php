@@ -17,6 +17,7 @@ function getManagerPermissions(): array {
         return array_fill_keys([
             'courses_view','courses_edit','courses_create','courses_delete',
             'internships_view','internships_edit','internships_create','internships_delete',
+            'banners_view','banners_edit','banners_create','banners_delete',
             'enrollments_view','users_view','reports_view',
             'coupons_view','coupons_edit','offline_apps_view','offline_apps_edit'
         ], 1);
