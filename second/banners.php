@@ -7,8 +7,21 @@ $activeNav = 'banners';
 
 $flash = null;
 
-// ── Setup: one-click create banners table if missing ────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup_table' && can('banners_edit')) {
+// ── Auto-setup: create banners table on first load if missing ────
+//    Idempotent — IF NOT EXISTS makes this safe to run on every page load
+//    when the table is genuinely missing. No user action required.
+$tableExists   = false;
+$bannerColumns = [];
+
+try {
+    $colsStmt = $db->query("SHOW COLUMNS FROM banners");
+    $bannerColumns = array_column($colsStmt->fetchAll(), 'Field');
+    $tableExists = !empty($bannerColumns);
+} catch (Exception $e) {
+    $tableExists = false;
+}
+
+if (!$tableExists && can('banners_edit')) {
     try {
         $db->exec("
             CREATE TABLE IF NOT EXISTS `banners` (
@@ -25,22 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup
               KEY `idx_active_order` (`is_active`, `sort_order`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
         ");
-        logAction('banners_table_created', 'banners', 0, 'Setup');
-        $flash = ['ok' => 'Banners table created. Ab tum banner upload kar sakte ho.'];
-    } catch (Exception $e) {
-        $flash = ['err' => 'Setup fail: ' . $e->getMessage()];
-    }
-}
+        logAction('banners_table_created', 'banners', 0, 'Auto-setup on first load');
 
-// Detect schema (existence + column layout)
-$bannerColumns = [];
-$tableExists   = false;
-try {
-    $colsStmt = $db->query("SHOW COLUMNS FROM banners");
-    $bannerColumns = array_column($colsStmt->fetchAll(), 'Field');
-    $tableExists = !empty($bannerColumns);
-} catch (Exception $e) {
-    $tableExists = false;
+        // Re-introspect so the rest of the page treats the table as existing
+        $colsStmt      = $db->query("SHOW COLUMNS FROM banners");
+        $bannerColumns = array_column($colsStmt->fetchAll(), 'Field');
+        $tableExists   = !empty($bannerColumns);
+    } catch (Exception $e) {
+        $flash = ['err' => 'Banners table create karne mein error: ' . $e->getMessage()];
+    }
 }
 
 $has = function ($col) use ($bannerColumns) { return in_array($col, $bannerColumns, true); };
@@ -201,16 +207,9 @@ if ($tableExists) {
         <?php if (!empty($flash['err'])): ?><div class="alert alert-error">⚠️ <?= htmlspecialchars($flash['err']) ?></div><?php endif; ?>
 
         <?php if (!$tableExists): ?>
-            <div class="alert alert-warn" style="display:flex;flex-direction:column;align-items:flex-start;gap:.6rem">
-                <div>⚠️ <strong>Banners table missing.</strong> Database mein <code>banners</code> table abhi exist nahi karta. Niche button click karke ek baar setup kar lo — phir tum banners upload kar sakte ho.</div>
-                <?php if (can('banners_edit')): ?>
-                    <form method="POST" style="margin:0">
-                        <input type="hidden" name="action" value="setup_table">
-                        <button type="submit" class="btn btn-primary">⚡ Create banners table now</button>
-                    </form>
-                <?php else: ?>
-                    <div style="font-size:.82rem;color:var(--muted)">Setup karne ke liye <code>banners_edit</code> permission chahiye.</div>
-                <?php endif; ?>
+            <div class="alert alert-warn">
+                ⚠️ Banners feature ke liye <code>banners</code> table chahiye, lekin tumhare paas <code>banners_edit</code> permission nahi hai.
+                Apne admin se kahokar setup karwao.
             </div>
         <?php endif; ?>
 
