@@ -260,7 +260,15 @@ tbody tr:hover td{background:var(--bg)}
         <h1>Internships Management</h1>
         <p class="subtitle">Sabhi internship programs view aur edit karein</p>
       </div>
-      <div class="restrict-notice">🔒 View + Edit only &nbsp;·&nbsp; Delete nahi</div>
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+        <?php if (can('internships_create')): ?>
+        <a href="internship_create.php" class="btn-filter" style="text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;align-self:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create New Internship
+        </a>
+        <?php endif; ?>
+        <div class="restrict-notice">🔒 Create + Edit &nbsp;·&nbsp; Delete nahi</div>
+      </div>
     </div>
 
     <div class="stats-row">
