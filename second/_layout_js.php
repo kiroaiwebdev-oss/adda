@@ -6,7 +6,7 @@
   const t = document.querySelector('[data-theme-toggle]');
   const r = document.documentElement;
   const stored = localStorage.getItem('mgr-theme');
-  let d = stored || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  let d = stored || ('light');
   r.setAttribute('data-theme', d);
   if(t) t.addEventListener('click', () => {
     d = d === 'dark' ? 'light' : 'dark';
