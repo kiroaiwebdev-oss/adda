@@ -29,8 +29,8 @@ $name = $_SESSION['user_name'] ?? 'Manager';
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 <style>
 /* Reuse same token CSS as dashboard */
-:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;--text:#28251d;--muted:#7a7974;--faint:#bab9b4;--primary:#16a34a;--primary-h:#15803d;--success:#437a22;--error:#a12c7b;--warning:#e67e22;--r-lg:.75rem;--r-md:.5rem;--shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);--t:180ms cubic-bezier(.16,1,.3,1)}
-[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:oklch(1 0 0/0.08);--divider:#262523;--text:#cdccca;--muted:#797876;--faint:#5a5957;--primary:#4ade80;--primary-h:#22c55e;--success:#6daa45;--error:#d163a7;--warning:#e67e22}
+:root,[data-theme="light"]{--bg:#f9fafb;--surface:#fff;--border:#e5e7eb;--divider:#e5e7eb;--text:#111827;--muted:#6b7280;--faint:#9ca3af;--primary:#16a34a;--primary-h:#15803d;--success:#437a22;--error:#a12c7b;--warning:#e67e22;--r-lg:.75rem;--r-md:.5rem;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--t:180ms cubic-bezier(.16,1,.3,1)}
+[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:rgba(255,255,255,0.08);--divider:#262523;--text:#cdccca;--muted:#797876;--faint:#5a5957;--primary:#4ade80;--primary-h:#22c55e;--success:#6daa45;--error:#d163a7;--warning:#e67e22}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
 
@@ -52,11 +52,11 @@ body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min
 .nav-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:var(--r-md);color:var(--text);text-decoration:none;font-size:.85rem;font-weight:500;transition:all var(--t)}
 .nav-item svg{width:1.2rem;height:1.2rem;color:var(--muted);flex-shrink:0}
 .nav-item:hover{background:var(--bg);color:var(--primary)}
-.nav-item.active{background:oklch(from var(--primary) l c h/0.1);color:var(--primary);font-weight:600}
+.nav-item.active{background:rgba(22,163,74,0.1);color:var(--primary);font-weight:600}
 .nav-item.active svg{color:var(--primary)}
 .sidebar-footer{display:flex;gap:.5rem;margin-top:auto;padding-top:1.5rem}
 .btn-sm{padding:.45rem .8rem;border-radius:var(--r-md);font-size:.75rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;border:none;cursor:pointer;transition:all var(--t)}
-.btn-danger{background:oklch(from var(--error) l c h/0.12);color:var(--error)}
+.btn-danger{background:rgba(161,44,123,0.12);color:var(--error)}
 .btn-danger:hover{background:var(--error);color:#fff}
 .btn-ghost{background:transparent;color:var(--muted)}
 .btn-ghost:hover{background:var(--bg);color:var(--text)}
@@ -77,8 +77,8 @@ td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid var(--divider)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg)}
 .badge{display:inline-flex;padding:.2rem .65rem;border-radius:9999px;font-size:.72rem;font-weight:600}
-.badge-published{background:oklch(from var(--success) l c h/0.12);color:var(--success)}
-.badge-draft{background:oklch(from var(--muted) l c h/0.15);color:var(--muted)}
+.badge-published{background:rgba(67,122,34,0.12);color:var(--success)}
+.badge-draft{background:rgba(107,114,128,0.15);color:var(--muted)}
 .action-link{font-size:.8rem;color:var(--primary);font-weight:500;text-decoration:none}
 .action-link:hover{text-decoration:underline}
 .no-delete{font-size:.75rem;color:var(--faint);font-style:italic}
@@ -97,7 +97,7 @@ tr:hover td{background:var(--bg)}
       <div>
         <h1>Courses Management</h1>
       </div>
-      <div style="font-size:.82rem;color:var(--muted);background:oklch(from var(--primary) l c h/0.08);padding:.4rem .9rem;border-radius:9999px">
+      <div style="font-size:.82rem;color:var(--muted);background:rgba(22,163,74,0.08);padding:.4rem .9rem;border-radius:9999px">
         View + Edit only &nbsp;•&nbsp; Delete restricted
       </div>
     </div>
@@ -157,8 +157,7 @@ tr:hover td{background:var(--bg)}
   const root = document.documentElement;
   const themeBtn = document.querySelector('[data-theme-toggle]');
   const savedTheme = localStorage.getItem('theme');
-  const prefersDark = matchMedia('(prefers-color-scheme:dark)').matches;
-  let currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  let currentTheme = savedTheme || 'light';
   root.setAttribute('data-theme', currentTheme);
 
   if(themeBtn) {
