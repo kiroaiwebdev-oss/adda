@@ -97,8 +97,16 @@ tr:hover td{background:var(--bg)}
       <div>
         <h1>Courses Management</h1>
       </div>
-      <div style="font-size:.82rem;color:var(--muted);background:rgba(22,163,74,0.08);padding:.4rem .9rem;border-radius:9999px">
-        View + Edit only &nbsp;•&nbsp; Delete restricted
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+        <?php if(can('courses_create')): ?>
+        <a href="course_create.php" class="btn-primary" style="text-decoration:none;display:inline-flex;align-items:center;gap:.4rem">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create New Course
+        </a>
+        <?php endif; ?>
+        <span style="font-size:.82rem;color:var(--muted);background:rgba(22,163,74,0.08);padding:.4rem .9rem;border-radius:9999px">
+          Create + Edit &nbsp;•&nbsp; Delete restricted
+        </span>
       </div>
     </div>
 
