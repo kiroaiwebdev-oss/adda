@@ -334,6 +334,7 @@ unset($modulesTemp, $lessonsTemp, $moduleRow, $lessonRow);
 
         #contentEditor code {
             background: #f3f4f6;
+            color: #111827;
             padding: 2px 6px;
             border-radius: 4px;
             font-family: 'Courier New', monospace;
@@ -347,6 +348,15 @@ unset($modulesTemp, $lessonsTemp, $moduleRow, $lessonRow);
             border-radius: 8px;
             overflow-x: auto;
             margin: 10px 0;
+        }
+
+        #contentEditor pre code {
+            background: transparent;
+            color: #f9fafb;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+            white-space: pre;
         }
 
         #contentEditor blockquote {

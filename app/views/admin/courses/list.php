@@ -34,6 +34,13 @@ $courses = $courseModel->getAll([
     'status' => $statusFilter,
     'search' => $search
 ]);
+
+// Count identical titles so duplicate-looking courses can be told apart in the UI
+$courseTitleCounts = [];
+foreach ($courses as $__c) {
+    $__t = strtolower(trim($__c['title']));
+    $courseTitleCounts[$__t] = ($courseTitleCounts[$__t] ?? 0) + 1;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -199,7 +206,13 @@ $courses = $courseModel->getAll([
                     <span class="text-sm font-bold text-primary-600">₹<?php echo number_format($course['price']); ?></span>
                 </div>
                 
-                <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2"><?php echo $course['title']; ?></h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-2"><?php echo $course['title']; ?></h3>
+                <div class="flex items-center flex-wrap gap-2 mb-2">
+                    <span class="text-xs text-gray-400 font-mono">#<?php echo (int)$course['id']; ?><?php if (!empty($course['slug'])): ?> · <?php echo htmlspecialchars($course['slug']); ?><?php endif; ?></span>
+                    <?php if (($courseTitleCounts[strtolower(trim($course['title']))] ?? 0) > 1): ?>
+                        <span class="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full" title="Another course has the same title">⚠ Duplicate title</span>
+                    <?php endif; ?>
+                </div>
                 <p class="text-sm text-gray-600 mb-4 line-clamp-2"><?php echo $course['description']; ?></p>
                 
                 <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
