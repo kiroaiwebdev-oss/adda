@@ -252,6 +252,10 @@ if ($status && $status !== 'all') {
             </div>
         <?php else: ?>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <?php
+                $internshipTitleCounts = [];
+                foreach ($internships as $__i) { $__t = strtolower(trim($__i['title'])); $internshipTitleCounts[$__t] = ($internshipTitleCounts[$__t] ?? 0) + 1; }
+                ?>
                 <?php foreach ($internships as $internship): ?>
                     <div class="internship-card">
                         <!-- Cover Image -->
@@ -279,9 +283,15 @@ if ($status && $status !== 'all') {
     </div>
 
     <!-- Title -->
-    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+    <h3 class="text-lg font-bold text-gray-900 mb-1 line-clamp-2">
         <?= htmlspecialchars($internship['title']) ?>
     </h3>
+    <div class="flex items-center flex-wrap gap-2 mb-2">
+        <span class="text-xs text-gray-400 font-mono">#<?= (int)$internship['id'] ?></span>
+        <?php if (($internshipTitleCounts[strtolower(trim($internship['title']))] ?? 0) > 1): ?>
+            <span class="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full" title="Another internship has the same title">⚠ Duplicate title</span>
+        <?php endif; ?>
+    </div>
 
     <!-- Meta Info -->
     <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">

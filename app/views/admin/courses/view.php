@@ -186,6 +186,14 @@ $enrollmentCount = $courseModel->getEnrollmentCount($courseId);
             overflow-x: auto;
             color: #10b981;
         }
+        .content-preview pre code {
+            background: transparent;
+            color: #10b981;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+            white-space: pre;
+        }
         .quiz-preview {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
