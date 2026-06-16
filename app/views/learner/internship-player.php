@@ -133,7 +133,38 @@ try {
     $modules = [];
 }
 
-// Determine current lesson
+// ---------------------------------------------------------------------------
+// DAY-BY-DAY DRIP UNLOCK (resets at 00:00 IST)
+// One lesson (one "day") unlocks per calendar day starting from enrollment.
+// ---------------------------------------------------------------------------
+date_default_timezone_set('Asia/Kolkata');
+$istTz = new DateTimeZone('Asia/Kolkata');
+try {
+    $enrolledAt = new DateTime($enrollment['created_at'] ?? 'now', $istTz);
+} catch (Exception $e) {
+    $enrolledAt = new DateTime('now', $istTz);
+}
+$nowIst = new DateTime('now', $istTz);
+$startDay = (clone $enrolledAt)->setTime(0, 0, 0);
+$todayDay = (clone $nowIst)->setTime(0, 0, 0);
+$daysPassed = (int) $startDay->diff($todayDay)->days;
+$unlockedCount = $daysPassed + 1;
+if ($unlockedCount < 1) { $unlockedCount = 1; }
+
+$globalLessonNumber = 0;
+foreach ($modules as $mi => $module) {
+    foreach ($module['lessons'] as $li => $lessonRow2) {
+        $globalLessonNumber++;
+        $isLocked = ($globalLessonNumber > $unlockedCount);
+        $unlockOn = (clone $startDay)->modify('+' . ($globalLessonNumber - 1) . ' days');
+        $modules[$mi]['lessons'][$li]['day_number'] = $globalLessonNumber;
+        $modules[$mi]['lessons'][$li]['is_locked']   = $isLocked;
+        $modules[$mi]['lessons'][$li]['unlock_date'] = $unlockOn->format('D, M j, Y');
+        $modules[$mi]['lessons'][$li]['unlock_in']   = $isLocked ? (int) $todayDay->diff($unlockOn)->days : 0;
+    }
+}
+unset($module, $lessonRow2);
+
 $currentLesson = null;
 $currentModule = null;
 
@@ -152,10 +183,21 @@ if ($requestedLessonId) {
 if (!$currentLesson) {
     foreach ($modules as $module) {
         foreach ($module['lessons'] as $lesson) {
-            if (empty($lesson['is_completed'])) {
+            if (empty($lesson['is_locked']) && empty($lesson['is_completed'])) {
                 $currentLesson = $lesson;
                 $currentModule = $module;
                 break 2;
+            }
+        }
+    }
+}
+
+if (!$currentLesson) {
+    foreach ($modules as $module) {
+        foreach ($module['lessons'] as $lesson) {
+            if (empty($lesson['is_locked'])) {
+                $currentLesson = $lesson;
+                $currentModule = $module;
             }
         }
     }
@@ -171,8 +213,10 @@ if (!$currentLesson) {
     }
 }
 
+$currentLessonLocked = $currentLesson ? !empty($currentLesson['is_locked']) : false;
+
 $contentBlocks = [];
-if ($currentLesson && !empty($currentLesson['content_blocks'])) {
+if ($currentLesson && !$currentLessonLocked && !empty($currentLesson['content_blocks'])) {
     $contentBlocks = $currentLesson['content_blocks'];
 }
 
@@ -188,6 +232,7 @@ foreach ($modules as $module) {
             'module_id'    => $module['id'],
             'sort_order'   => (int)($lesson['sort_order'] ?? 0),
             'is_completed' => !empty($lesson['is_completed']),
+            'is_locked'    => !empty($lesson['is_locked']),
         ];
         $totalLessons++;
         if (!empty($lesson['is_completed'])) {
@@ -204,7 +249,9 @@ if ($currentLesson) {
     foreach ($allLessonsFlat as $idx => $l) {
         if ($l['id'] == (int)$currentLesson['id']) {
             if ($idx > 0) $prevLesson = $allLessonsFlat[$idx - 1];
-            if ($idx < count($allLessonsFlat) - 1) $nextLesson = $allLessonsFlat[$idx + 1];
+            if ($idx < count($allLessonsFlat) - 1 && empty($allLessonsFlat[$idx + 1]['is_locked'])) {
+                $nextLesson = $allLessonsFlat[$idx + 1];
+            }
             break;
         }
     }
@@ -683,6 +730,20 @@ function renderContentHtml($html) {
                             <?php if (!empty($module['lessons'])): ?>
                                 <div class="divide-y divide-gray-100">
                                     <?php foreach ($module['lessons'] as $lessonIndex => $lesson): ?>
+                                        <?php if (!empty($lesson['is_locked'])): ?>
+                                        <div class="block px-3 py-2 bg-gray-50/60 cursor-not-allowed select-none" title="Unlocks <?php echo htmlspecialchars($lesson['unlock_date']); ?>">
+                                            <div class="flex items-start gap-2">
+                                                <div class="flex-shrink-0 mt-0.5">
+                                                    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="text-xs text-gray-400 mb-0.5">Day <?php echo $lesson['day_number']; ?> · Locked</div>
+                                                    <div class="font-medium text-gray-400 text-sm truncate"><?php echo decodeText($lesson['title']); ?></div>
+                                                    <div class="text-xs text-gray-400 mt-1">🔒 Unlocks <?php echo htmlspecialchars($lesson['unlock_date']); ?></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php else: ?>
                                         <a href="?id=<?php echo $internshipId; ?>&lesson=<?php echo $lesson['id']; ?>" 
                                            onclick="toggleSidebar()"
                                            class="block px-3 py-2 hover:bg-gray-50 transition-colors <?php echo ($currentLesson && $currentLesson['id'] == $lesson['id']) ? 'bg-primary-50 border-l-4 border-primary-600' : ''; ?>">
@@ -711,6 +772,7 @@ function renderContentHtml($html) {
                                                 </div>
                                             </div>
                                         </a>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
@@ -757,6 +819,20 @@ function renderContentHtml($html) {
                             <?php if (!empty($module['lessons'])): ?>
                                 <div class="divide-y divide-gray-100">
                                     <?php foreach ($module['lessons'] as $lessonIndex => $lesson): ?>
+                                        <?php if (!empty($lesson['is_locked'])): ?>
+                                        <div class="block px-4 py-3 bg-gray-50/60 cursor-not-allowed select-none" title="Unlocks <?php echo htmlspecialchars($lesson['unlock_date']); ?>">
+                                            <div class="flex items-start gap-3">
+                                                <div class="flex-shrink-0 mt-0.5">
+                                                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="text-xs text-gray-400 mb-1">Day <?php echo $lesson['day_number']; ?> · Locked</div>
+                                                    <div class="font-medium text-gray-400"><?php echo decodeText($lesson['title']); ?></div>
+                                                    <div class="text-xs text-gray-400 mt-1">🔒 Unlocks <?php echo htmlspecialchars($lesson['unlock_date']); ?></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <?php else: ?>
                                         <a href="?id=<?php echo $internshipId; ?>&lesson=<?php echo $lesson['id']; ?>" 
                                            class="block px-4 py-3 hover:bg-gray-50 transition-colors <?php echo ($currentLesson && $currentLesson['id'] == $lesson['id']) ? 'bg-primary-50 border-l-4 border-primary-600' : ''; ?>">
                                             <div class="flex items-start gap-3">
@@ -784,6 +860,7 @@ function renderContentHtml($html) {
                                                 </div>
                                             </div>
                                         </a>
+                                        <?php endif; ?>
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
@@ -833,7 +910,32 @@ function renderContentHtml($html) {
                     <?php endif; ?>
                 </div>
                 
-                <?php if (empty($contentBlocks)): ?>
+                <?php if ($currentLessonLocked): ?>
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200 rounded-2xl p-8 sm:p-14 text-center">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full shadow-md flex items-center justify-center mx-auto mb-5">
+                            <svg class="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Day <?php echo $currentLesson['day_number']; ?> is locked</h3>
+                        <p class="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-2">
+                            This lesson unlocks on <strong><?php echo htmlspecialchars($currentLesson['unlock_date']); ?></strong> at 12:00 AM (IST).
+                        </p>
+                        <p class="text-sm text-gray-500 max-w-md mx-auto mb-6">
+                            <?php if ((int)$currentLesson['unlock_in'] === 1): ?>
+                                Come back tomorrow — the next day unlocks in 1 day.
+                            <?php else: ?>
+                                New content is released one day at a time. This day unlocks in <?php echo (int)$currentLesson['unlock_in']; ?> days.
+                            <?php endif; ?>
+                        </p>
+                        <a href="?id=<?php echo $internshipId; ?>" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-semibold text-sm sm:text-base transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            Go to today's lesson
+                        </a>
+                    </div>
+                <?php elseif (empty($contentBlocks)): ?>
                     <div class="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-8 sm:p-12 text-center">
                         <svg class="w-12 h-12 sm:w-16 sm:h-16 text-yellow-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -877,7 +979,7 @@ function renderContentHtml($html) {
                     </div>
                 <?php endif; ?>
 
-                <?php if ($lessonHasQuiz && $isWeeklyQuizLesson): ?>
+                <?php if (!$currentLessonLocked && $lessonHasQuiz && $isWeeklyQuizLesson): ?>
                     <!-- Weekly Quiz CTA (Day 7) -->
                     <div class="mt-8 sm:mt-10 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-2xl p-5 sm:p-7 shadow-sm">
                         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -915,6 +1017,7 @@ function renderContentHtml($html) {
                     </div>
                 <?php endif; ?>
                 
+                <?php if (!$currentLessonLocked): ?>
                 <div class="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t-2 border-gray-200">
                     <?php if (empty($currentLesson['is_completed'])): ?>
                         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gray-50 rounded-xl p-4 sm:p-6 gap-4">
@@ -943,6 +1046,7 @@ function renderContentHtml($html) {
                         </div>
                     <?php endif; ?>
                 </div>
+                <?php endif; ?>
 
                 <!-- Previous / Next Navigation -->
                 <div class="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
