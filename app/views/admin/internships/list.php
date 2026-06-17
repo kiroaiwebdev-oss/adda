@@ -33,6 +33,9 @@ foreach ($internships as &$internship) {
         $internship['stats'] = ['total_enrolled' => 0, 'completed' => 0, 'active' => 0];
     }
 }
+unset($internship); // IMPORTANT: break the by-reference binding from the loop
+                    // above, otherwise the later `foreach ($internships as $internship)`
+                    // corrupts the last element and renders a duplicate card.
 
 // Overall statistics
 $totalInternships = count($internships);
