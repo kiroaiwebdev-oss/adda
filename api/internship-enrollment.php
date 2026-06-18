@@ -178,7 +178,59 @@ if ($action === 'enroll' && $_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $db->prepare("UPDATE payment_orders SET status = 'completed', razorpay_payment_id = ?, completed_at = NOW() WHERE razorpay_order_id = ?")->execute([$razorpayPaymentId, $razorpayOrderId]);
             } catch (Exception $e) { error_log('Order: ' . $e->getMessage()); }
-            
+
+            // ✅ Award referral points on first paid purchase
+            try {
+                $countStmt = $db->prepare("
+                    SELECT
+                        (SELECT COUNT(*) FROM enrollments WHERE user_id = ? AND status IN ('active','completed')) +
+                        (SELECT COUNT(*) FROM internship_enrollments WHERE user_id = ? AND payment_status = 'completed') AS total
+                ");
+                $countStmt->execute([$userId, $userId]);
+                $totalPurchases = (int) $countStmt->fetchColumn();
+
+                if ($totalPurchases <= 1) {
+                    $refStmt = $db->prepare("
+                        SELECT id, referrer_user_id, referral_code
+                        FROM referrals
+                        WHERE referred_user_id = ? AND status = 'pending'
+                        LIMIT 1
+                    ");
+                    $refStmt->execute([$userId]);
+                    $pendingRef = $refStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($pendingRef) {
+                        $pointsToAward = 100;
+                        try {
+                            $pStmt = $db->prepare("SELECT setting_value FROM referral_settings WHERE setting_key = 'points_per_referral'");
+                            $pStmt->execute();
+                            $val = $pStmt->fetchColumn();
+                            if ($val !== false && $val !== null) {
+                                $pointsToAward = (int) $val ?: 100;
+                            }
+                        } catch (Exception $e) { /* defaults */ }
+
+                        $db->prepare("UPDATE referrals SET status = 'completed', first_purchase_date = NOW() WHERE id = ?")
+                           ->execute([$pendingRef['id']]);
+
+                        $db->prepare("
+                            INSERT INTO referral_earnings
+                                (user_id, referral_id, points_earned, points_type, transaction_type, description)
+                            VALUES (?, ?, ?, 'purchase_bonus', 'credit', ?)
+                        ")->execute([
+                            $pendingRef['referrer_user_id'],
+                            $pendingRef['id'],
+                            $pointsToAward,
+                            'Referral purchase bonus (internship)'
+                        ]);
+
+                        error_log("🎁 Referral completed: referrer={$pendingRef['referrer_user_id']} user={$userId} points={$pointsToAward}");
+                    }
+                }
+            } catch (Exception $e) {
+                error_log('Referral award skipped: ' . $e->getMessage());
+            }
+
             $db->commit();
             
             // ✅ SEND OFFER LETTER EMAIL

@@ -73,18 +73,18 @@ function hasCol($col, $cols) { return in_array($col, $cols); }
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 <style>
 :root,[data-theme="light"]{
-  --bg:#f7f6f2;--surface:#fff;--border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;
-  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;
+  --bg:#f9fafb;--surface:#fff;--border:#e5e7eb;--divider:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--faint:#9ca3af;
+  --primary:#16a34a;--primary-h:#15803d;
   --success:#437a22;--error:#a12c7b;--orange:#da7101;
   --r-md:.5rem;--r-lg:.75rem;
   --shadow-md:0 4px 16px oklch(0.2 0.01 80/0.1);
   --t:180ms cubic-bezier(.16,1,.3,1);
 }
 [data-theme="dark"]{
-  --bg:#171614;--surface:#1c1b19;--border:oklch(1 0 0/0.08);--divider:#262523;
+  --bg:#171614;--surface:#1c1b19;--border:rgba(255,255,255,0.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;
+  --primary:#4ade80;--primary-h:#22c55e;
   --success:#6daa45;--error:#d163a7;--orange:#fdab43;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -99,7 +99,7 @@ h1{font-size:1.25rem;font-weight:700;flex:1}
 .builder-btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--orange);color:#fff;padding:.5rem 1rem;border-radius:var(--r-md);font-size:.83rem;font-weight:600;transition:background var(--t)}
 .builder-btn:hover{background:#c55700}
 
-.restrict-banner{background:oklch(from var(--error) l c h/0.07);border:1px solid oklch(from var(--error) l c h/0.2);color:var(--error);padding:.65rem 1rem;border-radius:var(--r-md);font-size:.8rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.restrict-banner{background:rgba(161,44,123,0.07);border:1px solid rgba(161,44,123,0.2);color:var(--error);padding:.65rem 1rem;border-radius:var(--r-md);font-size:.8rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
 
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1.75rem;box-shadow:var(--shadow-md);margin-bottom:1.25rem}
 .card-title{font-size:.85rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1.1rem;padding-bottom:.75rem;border-bottom:1px solid var(--divider)}
@@ -118,8 +118,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 .btn-ghost{padding:.7rem 1.2rem;border:1.5px solid var(--border);background:none;color:var(--muted)}.btn-ghost:hover{background:var(--bg)}
 
 .alert{padding:.75rem 1rem;border-radius:var(--r-md);font-size:.875rem;margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
-.alert-success{background:oklch(from var(--success) l c h/0.1);border:1px solid oklch(from var(--success) l c h/0.3);color:var(--success)}
-.alert-error{background:oklch(from var(--error) l c h/0.1);border:1px solid oklch(from var(--error) l c h/0.3);color:var(--error)}
+.alert-success{background:rgba(67,122,34,0.12);border:1px solid rgba(67,122,34,0.3);color:var(--success)}
+.alert-error{background:rgba(161,44,123,0.1);border:1px solid rgba(161,44,123,0.3);color:var(--error)}
 
 .meta-row{display:flex;gap:1rem;flex-wrap:wrap;font-size:.78rem;color:var(--muted);padding-top:.9rem;border-top:1px solid var(--divider);margin-top:.75rem}
 
@@ -237,7 +237,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
         Save Changes
       </button>
       <a href="internship_builder.php?internship_id=<?= $id ?>">
-        <button type="button" class="btn" style="background:oklch(from var(--orange) l c h/0.12);color:var(--orange)">
+        <button type="button" class="btn" style="background:rgba(218,113,1,0.12);color:var(--orange)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
           Go to Content Builder
         </button>
@@ -263,7 +263,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)
 <script>
 (function(){
   const r = document.documentElement;
-  const d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  const d = 'light';
   r.setAttribute('data-theme', d);
 })();
 </script>

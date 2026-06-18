@@ -170,10 +170,10 @@ class Referral {
             SELECT 
                 re.*,
                 r.referred_user_id,
-                u.name as referred_user_name
+                COALESCE(u.name, 'System') as referred_user_name
             FROM referral_earnings re
-            INNER JOIN referrals r ON re.referral_id = r.id
-            INNER JOIN users u ON r.referred_user_id = u.id
+            LEFT JOIN referrals r ON re.referral_id = r.id
+            LEFT JOIN users u ON r.referred_user_id = u.id
             WHERE re.user_id = ?
             ORDER BY re.created_at DESC
             LIMIT ?
@@ -196,23 +196,39 @@ class Referral {
                 throw new Exception("Insufficient points. Available: {$availablePoints}");
             }
             
-            // Get min redemption setting
-            $minStmt = $this->db->prepare("
-                SELECT setting_value FROM referral_settings WHERE setting_key = 'min_points_for_redemption'
-            ");
-            $minStmt->execute();
-            $minPoints = (int)$minStmt->fetchColumn() ?: 50;
+            // Get min redemption setting (with fallback if referral_settings table missing)
+            $minPoints = 50;
+            try {
+                $minStmt = $this->db->prepare("
+                    SELECT setting_value FROM referral_settings WHERE setting_key = 'min_points_for_redemption'
+                ");
+                $minStmt->execute();
+                $val = $minStmt->fetchColumn();
+                if ($val !== false && $val !== null) {
+                    $minPoints = (int)$val ?: 50;
+                }
+            } catch (Exception $e) {
+                $minPoints = 50;
+            }
             
             if ($pointsToRedeem < $minPoints) {
                 throw new Exception("Minimum {$minPoints} points required");
             }
             
-            // Get point value
-            $valueStmt = $this->db->prepare("
-                SELECT setting_value FROM referral_settings WHERE setting_key = 'point_value_in_rupees'
-            ");
-            $valueStmt->execute();
-            $pointValue = (float)$valueStmt->fetchColumn() ?: 1.0;
+            // Get point value (with fallback)
+            $pointValue = 1.0;
+            try {
+                $valueStmt = $this->db->prepare("
+                    SELECT setting_value FROM referral_settings WHERE setting_key = 'point_value_in_rupees'
+                ");
+                $valueStmt->execute();
+                $val = $valueStmt->fetchColumn();
+                if ($val !== false && $val !== null) {
+                    $pointValue = (float)$val ?: 1.0;
+                }
+            } catch (Exception $e) {
+                $pointValue = 1.0;
+            }
             
             $couponValue = $pointsToRedeem * $pointValue;
             
@@ -228,13 +244,35 @@ class Referral {
             $couponStmt->execute([$couponCode, $couponValue, $userId, $pointsToRedeem]);
             $couponId = $this->db->lastInsertId();
             
-            // Debit points
-            $debitStmt = $this->db->prepare("
-                INSERT INTO referral_earnings 
-                (user_id, referral_id, points_earned, transaction_type, description)
-                VALUES (?, 1, ?, 'debit', 'Points redeemed for coupon: {$couponCode}')
-            ");
-            $debitStmt->execute([$userId, $pointsToRedeem]);
+            // Debit points - use a real referral_id if user has any, otherwise NULL
+            $refLookup = $this->db->prepare("SELECT id FROM referrals WHERE referrer_user_id = ? ORDER BY id ASC LIMIT 1");
+            $refLookup->execute([$userId]);
+            $debitReferralId = $refLookup->fetchColumn();
+            if (!$debitReferralId) {
+                $debitReferralId = null;
+            }
+            
+            // Try insert with NULL referral_id first; if column is NOT NULL fall back to using user's first referral row or a self-reference
+            try {
+                $debitStmt = $this->db->prepare("
+                    INSERT INTO referral_earnings 
+                    (user_id, referral_id, points_earned, transaction_type, description)
+                    VALUES (?, ?, ?, 'debit', ?)
+                ");
+                $debitStmt->execute([$userId, $debitReferralId, $pointsToRedeem, "Points redeemed for coupon: {$couponCode}"]);
+            } catch (PDOException $insertErr) {
+                // Fallback: try with referral_id = 0 (some schemas might not allow NULL)
+                if ($debitReferralId === null) {
+                    $debitStmt = $this->db->prepare("
+                        INSERT INTO referral_earnings 
+                        (user_id, referral_id, points_earned, transaction_type, description)
+                        VALUES (?, 0, ?, 'debit', ?)
+                    ");
+                    $debitStmt->execute([$userId, $pointsToRedeem, "Points redeemed for coupon: {$couponCode}"]);
+                } else {
+                    throw $insertErr;
+                }
+            }
             
             $this->db->commit();
             
@@ -246,7 +284,9 @@ class Referral {
             ];
             
         } catch (Exception $e) {
-            $this->db->rollBack();
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
             throw $e;
         }
     }
@@ -255,11 +295,23 @@ class Referral {
      * Get referral settings
      */
     public function getSettings() {
-        $stmt = $this->db->query("SELECT setting_key, setting_value FROM referral_settings");
         $settings = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $settings[$row['setting_key']] = $row['setting_value'];
+        try {
+            $stmt = $this->db->query("SELECT setting_key, setting_value FROM referral_settings");
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $settings[$row['setting_key']] = $row['setting_value'];
+            }
+        } catch (Exception $e) {
+            // Table may not exist yet — return defaults
+            error_log("Referral settings unavailable: " . $e->getMessage());
         }
+        // Defaults
+        $settings += [
+            'points_per_referral'        => '100',
+            'signup_discount_percentage' => '40',
+            'min_points_for_redemption'  => '50',
+            'point_value_in_rupees'      => '1',
+        ];
         return $settings;
     }
     

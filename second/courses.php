@@ -29,8 +29,8 @@ $name = $_SESSION['user_name'] ?? 'Manager';
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 <style>
 /* Reuse same token CSS as dashboard */
-:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;--text:#28251d;--muted:#7a7974;--faint:#bab9b4;--primary:#01696f;--primary-h:#0c4e54;--success:#437a22;--error:#a12c7b;--warning:#e67e22;--r-lg:.75rem;--r-md:.5rem;--shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);--t:180ms cubic-bezier(.16,1,.3,1)}
-[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:oklch(1 0 0/0.08);--divider:#262523;--text:#cdccca;--muted:#797876;--faint:#5a5957;--primary:#4f98a3;--primary-h:#227f8b;--success:#6daa45;--error:#d163a7;--warning:#e67e22}
+:root,[data-theme="light"]{--bg:#f9fafb;--surface:#fff;--border:#e5e7eb;--divider:#e5e7eb;--text:#111827;--muted:#6b7280;--faint:#9ca3af;--primary:#16a34a;--primary-h:#15803d;--success:#437a22;--error:#a12c7b;--warning:#e67e22;--r-lg:.75rem;--r-md:.5rem;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--t:180ms cubic-bezier(.16,1,.3,1)}
+[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:rgba(255,255,255,0.08);--divider:#262523;--text:#cdccca;--muted:#797876;--faint:#5a5957;--primary:#4ade80;--primary-h:#22c55e;--success:#6daa45;--error:#d163a7;--warning:#e67e22}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
 
@@ -52,11 +52,11 @@ body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min
 .nav-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;border-radius:var(--r-md);color:var(--text);text-decoration:none;font-size:.85rem;font-weight:500;transition:all var(--t)}
 .nav-item svg{width:1.2rem;height:1.2rem;color:var(--muted);flex-shrink:0}
 .nav-item:hover{background:var(--bg);color:var(--primary)}
-.nav-item.active{background:oklch(from var(--primary) l c h/0.1);color:var(--primary);font-weight:600}
+.nav-item.active{background:rgba(22,163,74,0.1);color:var(--primary);font-weight:600}
 .nav-item.active svg{color:var(--primary)}
 .sidebar-footer{display:flex;gap:.5rem;margin-top:auto;padding-top:1.5rem}
 .btn-sm{padding:.45rem .8rem;border-radius:var(--r-md);font-size:.75rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;border:none;cursor:pointer;transition:all var(--t)}
-.btn-danger{background:oklch(from var(--error) l c h/0.12);color:var(--error)}
+.btn-danger{background:rgba(161,44,123,0.12);color:var(--error)}
 .btn-danger:hover{background:var(--error);color:#fff}
 .btn-ghost{background:transparent;color:var(--muted)}
 .btn-ghost:hover{background:var(--bg);color:var(--text)}
@@ -77,8 +77,8 @@ td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid var(--divider)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg)}
 .badge{display:inline-flex;padding:.2rem .65rem;border-radius:9999px;font-size:.72rem;font-weight:600}
-.badge-published{background:oklch(from var(--success) l c h/0.12);color:var(--success)}
-.badge-draft{background:oklch(from var(--muted) l c h/0.15);color:var(--muted)}
+.badge-published{background:rgba(67,122,34,0.12);color:var(--success)}
+.badge-draft{background:rgba(107,114,128,0.15);color:var(--muted)}
 .action-link{font-size:.8rem;color:var(--primary);font-weight:500;text-decoration:none}
 .action-link:hover{text-decoration:underline}
 .no-delete{font-size:.75rem;color:var(--faint);font-style:italic}
@@ -89,60 +89,7 @@ tr:hover td{background:var(--bg)}
 <body>
 <div class="app">
   <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
-      <svg viewBox="0 0 32 32" fill="none">
-        <rect width="32" height="32" rx="7" fill="var(--primary)"/>
-        <path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-      </svg>
-      <div class="logo-text">Internship<span>Adda</span></div>
-    </div>
-
-    <div class="sidebar-user">
-      <div class="user-badge"><?= htmlspecialchars(ucfirst($role)) ?></div>
-      <div class="user-name"><?= htmlspecialchars($name) ?></div>
-      <div class="user-email-sm">Platform Manager</div>
-    </div>
-
-    <nav>
-      <div class="nav-section">Overview</div>
-      <a href="manager_dashboard.php" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-        Dashboard
-      </a>
-
-      <div class="nav-section">Content</div>
-      <?php if(can('courses_view')): ?>
-      <a href="courses.php" class="nav-item active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Courses
-      </a>
-      <?php endif; ?>
-      <?php if(can('internships_view')): ?>
-      <a href="internships.php" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        Internships
-      </a>
-      <?php endif; ?>
-
-      <div class="nav-section">Logs</div>
-      <a href="activity_log.php" class="nav-item">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Activity Log
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      <a href="manager_dashboard.php?logout=1" class="btn-sm btn-danger">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </a>
-      <button data-theme-toggle class="btn-sm btn-ghost" aria-label="Toggle theme" style="padding:.45rem .6rem">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
-    </div>
-  </aside>
+  <?php $activeNav = "courses"; include __DIR__ . "/_sidebar.php"; ?>
 
   <!-- Main Content -->
   <main class="main">
@@ -150,7 +97,7 @@ tr:hover td{background:var(--bg)}
       <div>
         <h1>Courses Management</h1>
       </div>
-      <div style="font-size:.82rem;color:var(--muted);background:oklch(from var(--primary) l c h/0.08);padding:.4rem .9rem;border-radius:9999px">
+      <div style="font-size:.82rem;color:var(--muted);background:rgba(22,163,74,0.08);padding:.4rem .9rem;border-radius:9999px">
         View + Edit only &nbsp;•&nbsp; Delete restricted
       </div>
     </div>
@@ -210,8 +157,7 @@ tr:hover td{background:var(--bg)}
   const root = document.documentElement;
   const themeBtn = document.querySelector('[data-theme-toggle]');
   const savedTheme = localStorage.getItem('theme');
-  const prefersDark = matchMedia('(prefers-color-scheme:dark)').matches;
-  let currentTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+  let currentTheme = savedTheme || 'light';
   root.setAttribute('data-theme', currentTheme);
 
   if(themeBtn) {

@@ -89,10 +89,10 @@ unset($modulesTemp, $lessonsTemp);
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root,[data-theme="light"]{
-  --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
-  --border:rgba(40,37,29,.12);--divider:#dcd9d5;
-  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;--primary-light:rgba(1,105,111,.08);
+  --bg:#f9fafb;--surface:#fff;--surface-2:#f3f4f6;
+  --border:rgba(40,37,29,.12);--divider:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--faint:#9ca3af;
+  --primary:#16a34a;--primary-h:#15803d;--primary-light:rgba(22,163,74,.08);
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --blue:#006494;--purple:#7a39bb;
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;
@@ -104,7 +104,7 @@ unset($modulesTemp, $lessonsTemp);
   --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;
   --border:rgba(255,255,255,.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;--primary-light:rgba(79,152,163,.1);
+  --primary:#4ade80;--primary-h:#22c55e;--primary-light:rgba(74,222,128,.1);
   --success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;
   --blue:#5591c7;--purple:#a86fdf;
   --shadow-sm:0 1px 2px rgba(0,0,0,.2);
@@ -162,8 +162,8 @@ nav{flex:1;padding:.5rem 0;overflow-y:auto}
 .module-title{font-weight:700;font-size:.97rem}
 .module-meta{font-size:.75rem;color:var(--muted);margin-top:.15rem}
 .module-actions{display:flex;gap:.5rem;align-items:center}
-.btn-add-lesson{padding:.38rem .85rem;background:var(--primary-light);color:var(--primary);border:1px solid rgba(1,105,111,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
-.btn-add-lesson:hover{background:rgba(1,105,111,.15)}
+.btn-add-lesson{padding:.38rem .85rem;background:var(--primary-light);color:var(--primary);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
+.btn-add-lesson:hover{background:rgba(22,163,74,.15)}
 .btn-icon{width:32px;height:32px;border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:.8rem;transition:background var(--t),color var(--t)}
 .btn-icon-edit{color:var(--muted)}.btn-icon-edit:hover{background:var(--bg);color:var(--text)}
 
@@ -209,7 +209,7 @@ nav{flex:1;padding:.5rem 0;overflow-y:auto}
 .form-group{margin-bottom:1rem}
 .form-label{display:block;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:.4rem}
 .form-input,.form-textarea,.form-select{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:var(--r-md);background:var(--bg);color:var(--text);font:inherit;font-size:.9rem;transition:border-color var(--t)}
-.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(1,105,111,.08)}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(22,163,74,.08)}
 .form-textarea{min-height:90px;resize:vertical}
 .btn-cancel{padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:var(--r-md);font:inherit;font-size:.85rem;font-weight:600;color:var(--muted);background:none;cursor:pointer;transition:background var(--t)}
 .btn-cancel:hover{background:var(--bg);color:var(--text)}
@@ -264,47 +264,7 @@ nav{flex:1;padding:.5rem 0;overflow-y:auto}
 <body>
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <svg viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="7" fill="var(--primary)"/>
-      <path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-    <div class="logo-text">Internship<span>Adda</span></div>
-  </div>
-  <div class="sidebar-user">
-    <div class="user-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'manager') ?></div>
-    <div class="user-name"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Manager') ?></div>
-  </div>
-  <nav>
-    <div class="nav-section">Overview</div>
-    <a href="manager_dashboard.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-    <div class="nav-section">Content</div>
-    <a href="courses.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Courses
-    </a>
-    <a href="internships.php" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      Internships
-    </a>
-    <div class="nav-section">People</div>
-    <a href="enrollments.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-      Enrollments
-    </a>
-  </nav>
-  <div class="sidebar-footer">
-    <a href="?logout=1" class="btn-sm btn-danger">Logout</a>
-    <button data-theme-toggle class="btn-sm btn-ghost">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-  </div>
-</aside>
+<?php $activeNav = "internships"; include __DIR__ . "/_sidebar.php"; ?>
 
 <!-- MAIN -->
 <div class="main">
@@ -1008,9 +968,9 @@ async function deleteQuestion(id){
 // ─── THEME TOGGLE ─────────────────────────────────────────────────────
 (function(){
     var t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
-    var d=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+    var d=localStorage.getItem('mgr-theme')||'light';
     r.setAttribute('data-theme',d);
-    if(t) t.addEventListener('click',function(){ d=d==='dark'?'light':'dark'; r.setAttribute('data-theme',d); });
+    if(t) t.addEventListener('click',function(){ d=d==='dark'?'light':'dark'; r.setAttribute('data-theme',d); localStorage.setItem('mgr-theme',d); });
 })();
 
 // Close modal on overlay click
