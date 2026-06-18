@@ -248,8 +248,12 @@ try {
                 $enrollStmt = $db->prepare($sql);
                 
                 if ($enrollStmt->execute($insertValues)) {
-                    // Update course count
-                    $db->prepare("UPDATE courses SET enrolled_count = COALESCE(enrolled_count, 0) + 1 WHERE id = ?")->execute([$courseId]);
+                    // Update course count (best-effort — column may not exist on older schemas)
+                    try {
+                        $db->prepare("UPDATE courses SET enrolled_count = COALESCE(enrolled_count, 0) + 1 WHERE id = ?")->execute([$courseId]);
+                    } catch (Exception $countErr) {
+                        error_log("⚠️ enrolled_count update skipped: " . $countErr->getMessage());
+                    }
                     
                     echo json_encode([
                         'success' => true,

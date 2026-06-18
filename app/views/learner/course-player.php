@@ -103,7 +103,7 @@ try {
             $progressStmt->execute([$topicRow['id'], $userId]);
             $progress = $progressStmt->fetch(PDO::FETCH_ASSOC);
             
-            $chapters[$chapterIndex]['topics'][$topicIndex]['is_completed'] = $progress ? $progress['is_complete'] : 0;
+            $chapters[$chapterIndex]['topics'][$topicIndex]['is_completed'] = $progress ? ($progress['is_complete'] ?? $progress['is_completed'] ?? 0) : 0;
             $chapters[$chapterIndex]['topics'][$topicIndex]['completed_at'] = $progress ? $progress['completed_at'] : null;
             
             // Check if topic has quiz
@@ -196,8 +196,144 @@ if ($currentTopic && !empty($currentTopic['content_blocks'])) {
     $contentBlocks = $currentTopic['content_blocks'];
 }
 
+// Build a flat ordered list of topics for prev/next navigation and overall progress
+$allTopicsFlat = [];
+$totalTopics = 0;
+$completedTopics = 0;
+foreach ($chapters as $chapter) {
+    foreach ($chapter['topics'] as $topic) {
+        $allTopicsFlat[] = [
+            'id'           => (int)$topic['id'],
+            'title'        => $topic['title'],
+            'chapter_id'   => $chapter['id'],
+            'is_completed' => !empty($topic['is_completed']),
+        ];
+        $totalTopics++;
+        if (!empty($topic['is_completed'])) {
+            $completedTopics++;
+        }
+    }
+}
+$overallPct = $totalTopics > 0 ? (int) round(($completedTopics / $totalTopics) * 100) : 0;
+
+// Find prev / next topics relative to current
+$prevTopic = null;
+$nextTopic = null;
+if ($currentTopic) {
+    foreach ($allTopicsFlat as $idx => $t) {
+        if ($t['id'] == (int)$currentTopic['id']) {
+            if ($idx > 0) $prevTopic = $allTopicsFlat[$idx - 1];
+            if ($idx < count($allTopicsFlat) - 1) $nextTopic = $allTopicsFlat[$idx + 1];
+            break;
+        }
+    }
+}
+
 function decodeText($text) {
     return html_entity_decode($text ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+}
+
+/**
+ * Render content-block HTML safely so code samples (HTML/CSS/JS/PHP etc.)
+ * render as visible code instead of being eaten by the browser.
+ *
+ * Handles 4 cases:
+ *  a) Properly encoded <pre><code>&lt;!DOCTYPE&gt;...</code></pre>     → unchanged
+ *  b) Raw HTML inside <pre><code><!DOCTYPE>...</code></pre>            → re-encoded
+ *  c) Raw <!DOCTYPE>...</html> directly in content (no wrapper)        → wrap in <pre><code> + encode
+ *  d) Loose multi-line <code>...</code> (TinyMCE emits sometimes)      → wrap in <pre>
+ */
+function renderContentHtml($html) {
+    if ($html === null || $html === '') return '';
+
+    // STEP 1: Protect existing <pre>...</pre> blocks (handles any attrs).
+    // Re-encode raw doc-level tags inside their <code> child (or inside <pre> directly).
+    $protected = [];
+    $html = preg_replace_callback(
+        '#(<pre\b[^>]*>)([\s\S]*?)(</pre>)#i',
+        function ($m) use (&$protected) {
+            $openTag  = $m[1];
+            $inner    = $m[2];
+            $closeTag = $m[3];
+
+            if (stripos($inner, '<code') !== false) {
+                $inner = preg_replace_callback(
+                    '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
+                    function ($m2) {
+                        $codeContent = $m2[2];
+                        if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $codeContent)) {
+                            $codeContent = htmlspecialchars($codeContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                        }
+                        return $m2[1] . $codeContent . $m2[3];
+                    },
+                    $inner
+                );
+            } else {
+                if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $inner)) {
+                    $inner = htmlspecialchars($inner, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                }
+            }
+
+            $key = '___PRE_BLOCK_' . count($protected) . '___';
+            $protected[$key] = $openTag . $inner . $closeTag;
+            return $key;
+        },
+        $html
+    );
+
+    // STEP 2: Loose <code> (not inside <pre>) — wrap multi-line in <pre>, encode raw tags
+    $html = preg_replace_callback(
+        '#(<code\b[^>]*>)([\s\S]*?)(</code>)#i',
+        function ($m) {
+            $codeContent = $m[2];
+
+            if (preg_match('#<(!doctype|/?html|/?head|/?body|/?title|/?script|/?style|/?link|/?meta)\b#i', $codeContent)) {
+                $codeContent = htmlspecialchars($codeContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            }
+
+            if (strpos($codeContent, "\n") !== false || strpos($codeContent, '&lt;') !== false || strpos($codeContent, '<') !== false) {
+                return '<pre><code>' . $codeContent . '</code></pre>';
+            }
+            return $m[1] . $codeContent . $m[3];
+        },
+        $html
+    );
+
+    // STEP 3a: Auto-detect full <!DOCTYPE ...>...</html> blocks pasted raw into content
+    // (admin paste-bug). Wrap them in a styled <pre><code> with ALL contents encoded.
+    $html = preg_replace_callback(
+        '#(<!DOCTYPE\b[^>]*>[\s\S]*?</html\s*>)#i',
+        function ($m) {
+            $encoded = htmlspecialchars($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            return '<pre><code>' . $encoded . '</code></pre>';
+        },
+        $html
+    );
+
+    // STEP 3b: Encode any remaining bare doc-level tags (orphan <html>, <body>, etc.)
+    $rawTagPatterns = [
+        '#<!DOCTYPE\b[^>]*>#i',
+        '#</?html\b[^>]*>#i',
+        '#</?head\b[^>]*>#i',
+        '#</?body\b[^>]*>#i',
+        '#<title\b[^>]*>[\s\S]*?</title>#i',
+        '#<script\b[^>]*>[\s\S]*?</script>#i',
+        '#<style\b[^>]*>[\s\S]*?</style>#i',
+        '#<meta\b[^>]*/?>#i',
+        '#<link\b[^>]*/?>#i',
+    ];
+    foreach ($rawTagPatterns as $pattern) {
+        $html = preg_replace_callback($pattern, function ($m) {
+            return htmlspecialchars($m[0], ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }, $html);
+    }
+
+    // STEP 4: Restore protected <pre> blocks
+    foreach ($protected as $key => $value) {
+        $html = str_replace($key, $value, $html);
+    }
+
+    return $html;
 }
 ?>
 <!DOCTYPE html>
@@ -206,6 +342,9 @@ function decodeText($text) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title><?php echo decodeText($course['title']); ?> - Course Player</title>
+    <link rel="icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="shortcut icon" type="image/png" href="https://internshipadda.com/icons.png">
+    <link rel="apple-touch-icon" href="https://internshipadda.com/icons.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -237,25 +376,149 @@ function decodeText($text) {
             font-family: 'Poppins', sans-serif;
             font-weight: 700;
         }
-        .prose { 
-            max-width: none; 
+        .prose {
+            max-width: none;
             color: #374151;
+            font-size: 16px;
+            line-height: 1.75;
         }
-        .prose h1, .prose h2, .prose h3 { 
-            margin-top: 1.5em; 
+        .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+            margin-top: 1.5em;
             margin-bottom: 0.75em;
             color: #111827;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            line-height: 1.3;
         }
-        .prose p { 
-            margin-bottom: 1em; 
-            line-height: 1.7; 
+        .prose h1 { font-size: 2em; }
+        .prose h2 { font-size: 1.6em; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.3em; }
+        .prose h3 { font-size: 1.3em; }
+        .prose h4 { font-size: 1.1em; }
+        .prose p {
+            margin-bottom: 1em;
+            line-height: 1.75;
         }
-        .prose ul, .prose ol { 
-            margin-left: 1.5em; 
-            margin-bottom: 1em; 
+        .prose a {
+            color: #16a34a;
+            text-decoration: underline;
+            font-weight: 500;
         }
-        .prose li { 
-            margin-bottom: 0.5em; 
+        .prose a:hover { color: #15803d; }
+        .prose strong { color: #111827; font-weight: 700; }
+        .prose em { font-style: italic; }
+        .prose ul, .prose ol {
+            margin-left: 1.5em;
+            margin-bottom: 1em;
+            padding-left: 0.5em;
+        }
+        .prose ul { list-style-type: disc; }
+        .prose ol { list-style-type: decimal; }
+        .prose li {
+            margin-bottom: 0.5em;
+            line-height: 1.7;
+        }
+        /* Inline code */
+        .prose code {
+            background: #f3f4f6;
+            color: #db2777;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            font-weight: 500;
+            border: 1px solid #e5e7eb;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        /* Block code (inside <pre>) */
+        .prose pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.25em 0;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid #334155;
+        }
+        .prose pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            font-size: inherit;
+            font-weight: 400;
+            white-space: pre;
+            word-break: normal;
+        }
+        /* Standalone <code> outside pre, multi-line */
+        .prose > code, .content-block > code {
+            display: block;
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 18px 22px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.25em 0;
+            white-space: pre;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            border: 1px solid #334155;
+        }
+        .prose blockquote {
+            border-left: 4px solid #16a34a;
+            padding: 8px 16px;
+            margin: 1em 0;
+            color: #4b5563;
+            background: #f9fafb;
+            font-style: italic;
+            border-radius: 0 8px 8px 0;
+        }
+        .prose img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 1em 0;
+            display: block;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .prose video, .prose iframe {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 1em 0;
+        }
+        .prose iframe { min-height: 400px; }
+        .prose table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+            font-size: 0.95em;
+        }
+        .prose table th, .prose table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .prose table th {
+            background: #f3f4f6;
+            font-weight: 700;
+        }
+        .prose hr {
+            border: 0;
+            border-top: 1px solid #e5e7eb;
+            margin: 2em 0;
+        }
+        @media (max-width: 640px) {
+            .prose { font-size: 15px; }
+            .prose h1 { font-size: 1.6em; }
+            .prose h2 { font-size: 1.35em; }
+            .prose h3 { font-size: 1.15em; }
+            .prose pre, .prose > code { font-size: 13px; padding: 14px; }
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -545,6 +808,26 @@ function decodeText($text) {
     <!-- Main Content -->
     <div class="flex-1 overflow-y-auto bg-white mobile-content">
         <?php if ($currentTopic): ?>
+            <!-- Sticky Progress Header -->
+            <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-gray-200 px-4 sm:px-6 md:px-8 py-3">
+                <div class="max-w-4xl mx-auto flex items-center gap-3 sm:gap-4">
+                    <div class="hidden sm:flex w-10 h-10 bg-primary-100 rounded-full items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-primary-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <p class="text-xs sm:text-sm font-semibold text-gray-700"><?php echo $completedTopics; ?> of <?php echo $totalTopics; ?> topics</p>
+                            <p class="text-xs sm:text-sm font-bold text-primary-700"><?php echo $overallPct; ?>%</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div class="bg-gradient-to-r from-primary-500 to-primary-700 h-2 rounded-full transition-all duration-500" style="width: <?php echo $overallPct; ?>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
                 <div class="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200">
                     <div class="flex items-center gap-2 text-xs sm:text-sm text-primary-600 font-medium mb-2 sm:mb-3">
@@ -572,7 +855,7 @@ function decodeText($text) {
                             <?php if ($block['type'] === 'text'): ?>
                                 <div class="content-block">
                                     <div class="prose prose-sm sm:prose-base lg:prose-lg max-w-none">
-                                        <?php echo html_entity_decode($block['content'], ENT_QUOTES | ENT_HTML5, 'UTF-8'); ?>
+                                        <?php echo renderContentHtml($block['content']); ?>
                                     </div>
                                 </div>
                                 
@@ -629,6 +912,37 @@ function decodeText($text) {
                                 <p class="text-green-700 text-sm">You completed this topic</p>
                             </div>
                         </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Previous / Next Navigation -->
+                <div class="mt-6 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+                    <?php if ($prevTopic): ?>
+                        <a href="?id=<?php echo $courseId; ?>&topic=<?php echo $prevTopic['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 border border-gray-200 rounded-xl transition-all">
+                            <svg class="w-5 h-5 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            <div class="min-w-0 text-left">
+                                <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Previous</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($prevTopic['title'])); ?></p>
+                            </div>
+                        </a>
+                    <?php else: ?>
+                        <div></div>
+                    <?php endif; ?>
+
+                    <?php if ($nextTopic): ?>
+                        <a href="?id=<?php echo $courseId; ?>&topic=<?php echo $nextTopic['id']; ?>"
+                           class="group flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 bg-primary-50 hover:bg-primary-100 active:bg-primary-200 border border-primary-200 rounded-xl transition-all justify-end text-right">
+                            <div class="min-w-0">
+                                <p class="text-xs text-primary-700 uppercase tracking-wider font-semibold">Next</p>
+                                <p class="text-sm sm:text-base font-semibold text-gray-900 truncate"><?php echo htmlspecialchars(decodeText($nextTopic['title'])); ?></p>
+                            </div>
+                            <svg class="w-5 h-5 text-primary-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
                     <?php endif; ?>
                 </div>
             </div>

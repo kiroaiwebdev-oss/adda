@@ -62,21 +62,21 @@ if (can('courses_view')) {
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 <style>
 :root,[data-theme="light"]{
-  --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
-  --border:oklch(0.2 0.01 80/0.12);--divider:#dcd9d5;
-  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;--primary-hl:#cedcd8;
+  --bg:#f9fafb;--surface:#fff;--surface-2:#f3f4f6;
+  --border:#e5e7eb;--divider:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--faint:#9ca3af;
+  --primary:#16a34a;--primary-h:#15803d;--primary-hl:#dcfce7;
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;--r-xl:1rem;
-  --shadow-sm:0 1px 2px oklch(0.2 0.01 80/0.06);
-  --shadow-md:0 4px 12px oklch(0.2 0.01 80/0.08);
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.08);
   --t:180ms cubic-bezier(.16,1,.3,1);
 }
 [data-theme="dark"]{
   --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;
-  --border:oklch(1 0 0/0.08);--divider:#262523;
+  --border:rgba(255,255,255,0.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;--primary-hl:#313b3b;
+  --primary:#4ade80;--primary-h:#22c55e;--primary-hl:#14532d;
   --success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -91,14 +91,14 @@ button{cursor:pointer;background:none;border:none;font:inherit;color:inherit}
 .sidebar-logo svg{width:32px;height:32px;flex-shrink:0}
 .logo-text{font-weight:700;font-size:.95rem}.logo-text span{color:var(--primary)}
 .sidebar-user{padding:.9rem 1.25rem;border-bottom:1px solid var(--divider)}
-.user-badge{font-size:.72rem;font-weight:600;background:oklch(from var(--primary) l c h/0.12);color:var(--primary);padding:.2rem .6rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.35rem}
+.user-badge{font-size:.72rem;font-weight:600;background:rgba(22,163,74,0.12);color:var(--primary);padding:.2rem .6rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.35rem}
 .user-name{font-weight:600;font-size:.9rem}
 .user-email-sm{font-size:.75rem;color:var(--muted)}
 nav{flex:1;padding:.75rem 0;overflow-y:auto}
 .nav-section{padding:.5rem 1.25rem .25rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .nav-item{display:flex;align-items:center;gap:.7rem;padding:.55rem 1.25rem;font-size:.875rem;color:var(--muted);transition:color var(--t),background var(--t);position:relative}
 .nav-item:hover{background:var(--bg);color:var(--text)}
-.nav-item.active{background:oklch(from var(--primary) l c h/0.1);color:var(--primary);font-weight:600}
+.nav-item.active{background:rgba(22,163,74,0.1);color:var(--primary);font-weight:600}
 .nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--primary);border-radius:0 4px 4px 0}
 .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
 .nav-item.active svg,.nav-item:hover svg{opacity:1}
@@ -106,7 +106,7 @@ nav{flex:1;padding:.75rem 0;overflow-y:auto}
 .sidebar-footer{padding:1rem 1.25rem;border-top:1px solid var(--divider);display:flex;gap:.5rem;align-items:center}
 .btn-sm{padding:.45rem .9rem;font-size:.8rem;border-radius:var(--r-md);font-weight:500;transition:background var(--t),color var(--t);display:inline-flex;align-items:center;gap:.3rem}
 .btn-ghost{border:1px solid var(--border);color:var(--muted)}.btn-ghost:hover{background:var(--bg);color:var(--text)}
-.btn-danger{background:oklch(from var(--error) l c h/0.1);color:var(--error)}.btn-danger:hover{background:oklch(from var(--error) l c h/0.18)}
+.btn-danger{background:rgba(161,44,123,0.1);color:var(--error)}.btn-danger:hover{background:rgba(161,44,123,0.18)}
 
 /* MAIN */
 .main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100dvh}
@@ -144,10 +144,10 @@ td{padding:.75rem 1rem;font-size:.85rem;border-bottom:1px solid var(--divider)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg)}
 .status-badge{display:inline-flex;align-items:center;padding:.2rem .65rem;border-radius:9999px;font-size:.72rem;font-weight:600}
-.status-published{background:oklch(from var(--success) l c h/0.12);color:var(--success)}
-.status-draft{background:oklch(from var(--muted) l c h/0.15);color:var(--muted)}
-.status-pending{background:oklch(from var(--orange) l c h/0.15);color:var(--orange)}
-.status-active{background:oklch(from var(--success) l c h/0.12);color:var(--success)}
+.status-published{background:rgba(67,122,34,0.12);color:var(--success)}
+.status-draft{background:rgba(107,114,128,0.15);color:var(--muted)}
+.status-pending{background:rgba(218,113,1,0.15);color:var(--orange)}
+.status-active{background:rgba(67,122,34,0.12);color:var(--success)}
 
 /* ACTIVITY */
 .activity-list{list-style:none}
@@ -158,8 +158,8 @@ tr:hover td{background:var(--bg)}
 .activity-meta{font-size:.73rem;color:var(--muted);margin-top:.15rem}
 
 /* NOTICES */
-.perm-notice{background:oklch(from var(--primary) l c h/0.07);border:1px solid oklch(from var(--primary) l c h/0.2);border-radius:var(--r-md);padding:.75rem 1rem;font-size:.82rem;color:var(--primary);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
-.warn-notice{background:oklch(from var(--orange) l c h/0.08);border:1px solid oklch(from var(--orange) l c h/0.25);border-radius:var(--r-md);padding:.65rem 1rem;font-size:.8rem;color:var(--orange);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.perm-notice{background:rgba(22,163,74,0.07);border:1px solid rgba(22,163,74,0.2);border-radius:var(--r-md);padding:.75rem 1rem;font-size:.82rem;color:var(--primary);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem}
+.warn-notice{background:rgba(218,113,1,0.08);border:1px solid oklch(from var(--orange) l c h/0.25);border-radius:var(--r-md);padding:.65rem 1rem;font-size:.8rem;color:var(--orange);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
 
 /* MOBILE */
 .mobile-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--r-md);color:var(--muted);flex-shrink:0}
@@ -175,62 +175,7 @@ tr:hover td{background:var(--bg)}
 </head>
 <body>
 
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <svg viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="7" fill="var(--primary)"/>
-      <path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-    <div class="logo-text">Internship<span>Adda</span></div>
-  </div>
-
-  <div class="sidebar-user">
-    <div class="user-badge"><?= htmlspecialchars(ucfirst($role)) ?></div>
-    <div class="user-name"><?= htmlspecialchars($name) ?></div>
-    <div class="user-email-sm">Platform Manager</div>
-  </div>
-
-  <nav>
-    <div class="nav-section">Overview</div>
-    <a href="manager_dashboard.php" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-
-    <div class="nav-section">Content</div>
-    <?php if(can('courses_view')): ?>
-    <a href="courses.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Courses
-    </a>
-    <?php endif; ?>
-    <?php if(can('internships_view')): ?>
-    <a href="internships.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      Internships
-    </a>
-    <?php endif; ?>
-
-    
-
-    <div class="nav-section">Logs</div>
-    <a href="activity_log.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Activity Log
-    </a>
-  </nav>
-
-  <div class="sidebar-footer">
-    <a href="manager_dashboard.php?logout=1" class="btn-sm btn-danger">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Logout
-    </a>
-    <button data-theme-toggle class="btn-sm btn-ghost" aria-label="Toggle theme" style="padding:.45rem .6rem">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-  </div>
-</aside>
+<?php $activeNav = "dashboard"; include __DIR__ . "/_sidebar.php"; ?>
 
 <div class="main">
   <header class="topbar">
@@ -365,7 +310,7 @@ tr:hover td{background:var(--bg)}
 (function(){
   const t = document.querySelector('[data-theme-toggle]');
   const r = document.documentElement;
-  let d = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  let d = 'light';
   r.setAttribute('data-theme', d);
   if(t) t.addEventListener('click', () => {
     d = d === 'dark' ? 'light' : 'dark';

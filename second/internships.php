@@ -147,10 +147,10 @@ function skillBadgeClass(string $level): string {
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
 <style>
 :root,[data-theme="light"]{
-  --bg:#f7f6f2;--surface:#fff;--surface-2:#fbfbf9;
-  --border:rgba(40,37,29,.12);--divider:#dcd9d5;
-  --text:#28251d;--muted:#7a7974;--faint:#bab9b4;
-  --primary:#01696f;--primary-h:#0c4e54;
+  --bg:#f9fafb;--surface:#fff;--surface-2:#f3f4f6;
+  --border:rgba(40,37,29,.12);--divider:#e5e7eb;
+  --text:#111827;--muted:#6b7280;--faint:#9ca3af;
+  --primary:#16a34a;--primary-h:#15803d;
   --success:#437a22;--warning:#964219;--error:#a12c7b;--orange:#da7101;
   --r-sm:.375rem;--r-md:.5rem;--r-lg:.75rem;
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);
@@ -160,7 +160,7 @@ function skillBadgeClass(string $level): string {
   --bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;
   --border:rgba(255,255,255,.08);--divider:#262523;
   --text:#cdccca;--muted:#797876;--faint:#5a5957;
-  --primary:#4f98a3;--primary-h:#227f8b;
+  --primary:#4ade80;--primary-h:#22c55e;
   --success:#6daa45;--warning:#bb653b;--error:#d163a7;--orange:#fdab43;
   --shadow-sm:0 1px 2px rgba(0,0,0,.2);
 }
@@ -173,13 +173,13 @@ img{max-width:100%;height:auto;display:block}
 .sidebar-logo svg{width:30px;height:30px;flex-shrink:0}
 .logo-text{font-weight:700;font-size:.92rem}.logo-text span{color:var(--primary)}
 .sidebar-user{padding:.75rem 1.25rem;border-bottom:1px solid var(--divider)}
-.user-badge{font-size:.7rem;font-weight:700;background:rgba(1,105,111,.12);color:var(--primary);padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
+.user-badge{font-size:.7rem;font-weight:700;background:rgba(22,163,74,.12);color:var(--primary);padding:.18rem .55rem;border-radius:9999px;text-transform:uppercase;letter-spacing:.04em;display:inline-block;margin-bottom:.3rem}
 .user-name{font-weight:600;font-size:.88rem}
 nav{flex:1;padding:.5rem 0;overflow-y:auto}
 .nav-section{padding:.45rem 1.25rem .2rem;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
 .nav-item{display:flex;align-items:center;gap:.65rem;padding:.5rem 1.25rem;font-size:.85rem;color:var(--muted);transition:color var(--t),background var(--t);position:relative}
 .nav-item:hover{background:var(--bg);color:var(--text)}
-.nav-item.active{background:rgba(1,105,111,.1);color:var(--primary);font-weight:600}
+.nav-item.active{background:rgba(22,163,74,.1);color:var(--primary);font-weight:600}
 .nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--primary);border-radius:0 4px 4px 0}
 .nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
 .nav-item.active svg,.nav-item:hover svg{opacity:1}
@@ -224,7 +224,7 @@ tbody tr:hover td{background:var(--bg)}
 .badge{display:inline-flex;align-items:center;padding:.2rem .6rem;border-radius:9999px;font-size:.7rem;font-weight:700;white-space:nowrap}
 .badge-active{background:rgba(67,122,34,.12);color:var(--success)}
 .badge-inactive{background:rgba(122,121,116,.12);color:var(--muted)}
-.badge-remote,.badge-onsite,.badge-hybrid{background:rgba(1,105,111,.1);color:var(--primary)}
+.badge-remote,.badge-onsite,.badge-hybrid{background:rgba(22,163,74,.1);color:var(--primary)}
 .badge-onsite{background:rgba(218,113,1,.12);color:var(--orange)}
 .badge-hybrid{background:rgba(0,100,148,.1);color:#006494}
 .badge-beginner{background:rgba(67,122,34,.1);color:var(--success)}
@@ -234,8 +234,8 @@ tbody tr:hover td{background:var(--bg)}
 .price-main{font-weight:700}.price-strike{font-size:.72rem;color:var(--muted);text-decoration:line-through;display:block}
 .price-free{color:var(--success);font-weight:700}
 .actions{display:flex;gap:.5rem;align-items:center}
-.btn-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .8rem;background:rgba(1,105,111,.1);color:var(--primary);border:1px solid rgba(1,105,111,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
-.btn-edit:hover{background:rgba(1,105,111,.18)}
+.btn-edit{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .8rem;background:rgba(22,163,74,.1);color:var(--primary);border:1px solid rgba(22,163,74,.2);border-radius:var(--r-md);font-size:.78rem;font-weight:600;transition:background var(--t)}
+.btn-edit:hover{background:rgba(22,163,74,.18)}
 .no-del{font-size:.7rem;color:var(--faint);font-style:italic}
 .empty-state{padding:3rem 1.5rem;text-align:center;color:var(--muted)}
 .empty-state svg{width:40px;height:40px;margin:0 auto .75rem;opacity:.35}
@@ -246,55 +246,7 @@ tbody tr:hover td{background:var(--bg)}
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <svg viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="7" fill="var(--primary)"/>
-      <path d="M9 23L16 9L23 23" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 19h8" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-    <div class="logo-text">Internship<span>Adda</span></div>
-  </div>
-  <div class="sidebar-user">
-    <div class="user-badge"><?= htmlspecialchars($_SESSION['user_role'] ?? 'manager') ?></div>
-    <div class="user-name"><?= htmlspecialchars($_SESSION['user_name'] ?? 'Manager') ?></div>
-  </div>
-  <nav>
-    <div class="nav-section">Overview</div>
-    <a href="manager_dashboard.php" class="nav-item ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-      Dashboard
-    </a>
-
-    <div class="nav-section">Content</div>
-    <?php if(can('courses_view')): ?>
-    <a href="courses.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-      Courses
-    </a>
-    <?php endif; ?>
-    <?php if(can('internships_view')): ?>
-    <a href="internships.php" class="nav-item active">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-      Internships
-    </a>
-    <?php endif; ?>
-
-    
-
-    <div class="nav-section">Logs</div>
-    <a href="activity_log.php" class="nav-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-      Activity Log
-    </a>
-  </nav>
-  <div class="sidebar-footer">
-    <a href="?logout=1" class="btn-sm btn-danger">Logout</a>
-    <button data-theme-toggle class="btn-sm btn-ghost" aria-label="Toggle theme">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-    </button>
-  </div>
-</aside>
+<?php $activeNav = "internships"; include __DIR__ . "/_sidebar.php"; ?>
 
 <div class="main">
   <header class="topbar">
@@ -308,7 +260,15 @@ tbody tr:hover td{background:var(--bg)}
         <h1>Internships Management</h1>
         <p class="subtitle">Sabhi internship programs view aur edit karein</p>
       </div>
-      <div class="restrict-notice">🔒 View + Edit only &nbsp;·&nbsp; Delete nahi</div>
+      <div style="display:flex;align-items:center;gap:.75rem;flex-wrap:wrap">
+        <?php if (can('internships_create')): ?>
+        <a href="internship_create.php" class="btn-filter" style="text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;align-self:center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Create New Internship
+        </a>
+        <?php endif; ?>
+        <div class="restrict-notice">🔒 Create + Edit &nbsp;·&nbsp; Delete nahi</div>
+      </div>
     </div>
 
     <div class="stats-row">
@@ -466,9 +426,9 @@ tbody tr:hover td{background:var(--bg)}
 <script>
 (function(){
   var t=document.querySelector('[data-theme-toggle]'),r=document.documentElement;
-  var d=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';
+  var d=localStorage.getItem('mgr-theme')||'light';
   r.setAttribute('data-theme',d);
-  if(t)t.addEventListener('click',function(){d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);});
+  if(t)t.addEventListener('click',function(){d=d==='dark'?'light':'dark';r.setAttribute('data-theme',d);localStorage.setItem('mgr-theme',d);});
 })();
 document.querySelectorAll('#filterForm select').forEach(function(el){
   el.addEventListener('change',function(){document.getElementById('filterForm').submit();});

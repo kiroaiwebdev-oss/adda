@@ -186,7 +186,7 @@ try {
 
             if ($checkStmt->rowCount() == 0) {
                 $stmt = $db->prepare("
-                    INSERT INTO enrollments (user_id, course_id, enrollment_date, payment_status, amount_paid, payment_method, transaction_id)
+                    INSERT INTO enrollments (user_id, course_id, enrolled_at, payment_status, amount_paid, payment_method, payment_id)
                     VALUES (?, ?, NOW(), 'completed', ?, 'razorpay', ?)
                 ");
                 $stmt->execute([$userId, $courseId, $order['amount'], $razorpayPaymentId]);
@@ -209,10 +209,10 @@ try {
 
             if ($checkStmt->rowCount() == 0) {
                 $stmt = $db->prepare("
-                    INSERT INTO internship_enrollments (user_id, internship_id, enrolled_at, payment_status, amount_paid, payment_method, transaction_id)
-                    VALUES (?, ?, NOW(), 'completed', ?, 'razorpay', ?)
+                    INSERT INTO internship_enrollments (user_id, internship_id, payment_status, status, payment_id, payment_amount, final_amount, created_at)
+                    VALUES (?, ?, 'completed', 'accepted', ?, ?, ?, NOW())
                 ");
-                $stmt->execute([$userId, $internshipId, $order['amount'], $razorpayPaymentId]);
+                $stmt->execute([$userId, $internshipId, $razorpayPaymentId, $order['amount'], $order['amount']]);
                 error_log("✅ Internship enrollment created");
 
                 try {
@@ -225,6 +225,58 @@ try {
             // ✅ IMPORTANT FIX: internship payment verified means offer letter send karo
             $shouldSendOfferLetter = true;
             $redirectUrl = getFirstInternshipLessonUrl($db, $internshipId);
+        }
+
+        // ✅ Award referral points on first paid purchase
+        try {
+            $countStmt = $db->prepare("
+                SELECT
+                    (SELECT COUNT(*) FROM enrollments WHERE user_id = ? AND payment_status = 'completed') +
+                    (SELECT COUNT(*) FROM internship_enrollments WHERE user_id = ? AND payment_status = 'completed') AS total
+            ");
+            $countStmt->execute([$userId, $userId]);
+            $totalPurchases = (int) $countStmt->fetchColumn();
+
+            if ($totalPurchases <= 1) {
+                $refStmt = $db->prepare("
+                    SELECT id, referrer_user_id, referral_code
+                    FROM referrals
+                    WHERE referred_user_id = ? AND status = 'pending'
+                    LIMIT 1
+                ");
+                $refStmt->execute([$userId]);
+                $pendingRef = $refStmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($pendingRef) {
+                    $pointsToAward = 100;
+                    try {
+                        $pStmt = $db->prepare("SELECT setting_value FROM referral_settings WHERE setting_key = 'points_per_referral'");
+                        $pStmt->execute();
+                        $val = $pStmt->fetchColumn();
+                        if ($val !== false && $val !== null) {
+                            $pointsToAward = (int) $val ?: 100;
+                        }
+                    } catch (Exception $e) { /* defaults */ }
+
+                    $db->prepare("UPDATE referrals SET status = 'completed', first_purchase_date = NOW() WHERE id = ?")
+                       ->execute([$pendingRef['id']]);
+
+                    $db->prepare("
+                        INSERT INTO referral_earnings
+                            (user_id, referral_id, points_earned, points_type, transaction_type, description)
+                        VALUES (?, ?, ?, 'purchase_bonus', 'credit', ?)
+                    ")->execute([
+                        $pendingRef['referrer_user_id'],
+                        $pendingRef['id'],
+                        $pointsToAward,
+                        'Referral purchase bonus'
+                    ]);
+
+                    error_log("🎁 Referral completed: referrer={$pendingRef['referrer_user_id']} user={$userId} points={$pointsToAward}");
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Referral award skipped: ' . $e->getMessage());
         }
 
         $db->commit();

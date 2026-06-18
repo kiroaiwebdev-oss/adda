@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <title>Manager Login — InternshipAdda</title>
 <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
 <style>
-:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#fff;--border:#d4d1ca;--text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-h:#0c4e54;--error:#a12c7b;--radius:0.75rem;--shadow:0 4px 24px oklch(0.2 0.01 80/0.10)}
-[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:#393836;--text:#cdccca;--muted:#797876;--primary:#4f98a3;--primary-h:#227f8b;--error:#d163a7}
+:root,[data-theme="light"]{--bg:#f9fafb;--surface:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280;--primary:#16a34a;--primary-h:#15803d;--error:#a12c7b;--radius:0.75rem;--shadow:0 4px 24px rgba(0,0,0,0.08)}
+[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--border:rgba(255,255,255,0.08);--text:#cdccca;--muted:#797876;--primary:#4ade80;--primary-h:#22c55e;--error:#d163a7}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Satoshi',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;align-items:center;justify-content:center}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;width:100%;max-width:420px;box-shadow:var(--shadow)}
@@ -51,8 +51,8 @@ input[type=email],input[type=password]{width:100%;padding:0.7rem 1rem;border:1.5
 input:focus{outline:none;border-color:var(--primary)}
 .btn{width:100%;padding:0.8rem;background:var(--primary);color:#fff;border:none;border-radius:0.5rem;font-family:inherit;font-size:0.95rem;font-weight:600;cursor:pointer;transition:background 180ms}
 .btn:hover{background:var(--primary-h)}
-.error-box{background:oklch(from var(--error) l c h/0.1);border:1px solid oklch(from var(--error) l c h/0.3);color:var(--error);padding:0.75rem 1rem;border-radius:0.5rem;font-size:0.875rem;margin-bottom:1.2rem}
-.badge{display:inline-flex;align-items:center;gap:0.4rem;background:oklch(from var(--primary) l c h/0.12);color:var(--primary);padding:0.3rem 0.75rem;border-radius:9999px;font-size:0.78rem;font-weight:600;margin-bottom:1.5rem}
+.error-box{background:rgba(161,44,123,0.1);border:1px solid rgba(161,44,123,0.3);color:var(--error);padding:0.75rem 1rem;border-radius:0.5rem;font-size:0.875rem;margin-bottom:1.2rem}
+.badge{display:inline-flex;align-items:center;gap:0.4rem;background:rgba(22,163,74,0.12);color:var(--primary);padding:0.3rem 0.75rem;border-radius:9999px;font-size:0.78rem;font-weight:600;margin-bottom:1.5rem}
 </style>
 </head>
 <body>
